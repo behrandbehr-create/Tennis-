@@ -39,6 +39,9 @@ count.
 ## Files
 - `index.html`, `css/`, `js/`  the site itself (no need to touch)
 - `league-data.js`  all league content
-- `assets/`  racquet, ball and court artwork (local copies; the site prefers the
-  hosted high-resolution versions when online)
+- `assets/`  racquet, ball, logo and court artwork (local fallbacks; the site
+  prefers the hosted high-resolution club versions when online)
 - `server/`  optional live-sync server, see server/README.md
+
+## Uploading to Netlify (or any host)
+The host needs `index.html` at the top level of what you upload. Drag the **folder itself** (or a zip made from the *contents* of the folder, not the folder wrapped in another folder) onto app.netlify.com/drop. A ready-made deploy zip is included in the kit for each site.

@@ -25,10 +25,12 @@ explains day-to-day editing (players, schedule, scores) and publishing.
   server in `server/`.
 
 ## Artwork
-The spinning racquets, tennis ball, crest and night-court hero video were
-generated with Higgsfield and are hosted in your Higgsfield library. The site
+The spinning racquets and tennis ball were generated with Higgsfield. The
+Country Club of Colorado logos and the outdoor-courts hero photo come from the
+club brand gallery. All of it is hosted in your Higgsfield library; the site
 loads those hosted copies when online and falls back to the local files in
-`assets/` when opened offline or from a folder.
+`assets/` when opened offline or from a folder. Brand colors: forest green
+#344F2C, olive #728728, paper white, soft gray, charcoal.
 
 ## Uploading to Netlify (or any host)
 The host needs `index.html` at the top level of what you upload. Drag the **folder itself** (or a zip made from the *contents* of the folder, not the folder wrapped in another folder) onto app.netlify.com/drop. A ready-made deploy zip is included in the kit for each site.

@@ -21,9 +21,11 @@
       ['fba6cac9-2556-466f-87c7-2c3734ff60dd.webp', 'assets/racquet-1.webp']
     ].map(([r, l]) => ({ remote: CDN + r, local: l })),
     ball: { remote: CDN + 'a01e0a84-f620-4702-932d-e5829e9dc60d.webp', local: 'assets/ball-fallback.webp' },
-    crest: { remote: CDN + 'f3704c93-f42f-4197-8bb3-e2dac3bcd4bd.webp', local: 'assets/crest-fallback.webp' },
-    hero: { remote: CDN + '66b584c6-68c9-49f5-84ef-333d82161a80.webp', local: 'assets/court-poster.jpg' },
-    heroVideo: { remote: 'https://d8j0ntlcm91z4.cloudfront.net/user_3G9FnmnAtJVrnrQzzqiZ1NoYfPk/hf_20260920_235839_24a91b09-114a-4d69-982a-45be16f01a5b.mp4', local: 'assets/court-loop.mp4' }
+    crest: { remote: CDN + 'e8a3764d-4c48-4bf9-b7e8-c1a31ad8b2be.png', local: 'assets/club-logo.png' },
+    logoWhite: { remote: CDN + '649f2581-26e9-4359-b6f2-45507293a69f.png', local: 'assets/club-logo-white.png' },
+    hero: { remote: CDN + 'bc254c47-a8aa-4459-9aad-acbd27757314.webp', local: 'assets/court-poster.jpg' },
+    courts: { remote: CDN + 'ef4ab44e-b3b1-40ce-9bc3-a28d27534a41.webp', local: 'assets/court-poster.jpg' },
+    heroVideo: null
   };
   const isFile = location.protocol === 'file:';
   function artSrc(a) { return isFile && a.local ? a.local : (a.remote || a.local); }
@@ -189,9 +191,8 @@
   function renderHome() {
     const d = S.data;
     $('#hero-eyebrow').textContent = (d.season ? d.season + ' · ' : '') + (d.dayOfWeek ? d.dayOfWeek + 's ' : '') + time12(d.startTime) + ' to ' + time12(d.endTime);
-    const words = d.name.split(' '); const last = words.length > 2 ? words.splice(-2).join(' ') : words.splice(-1).join(' ');
-    $('#hero-title').innerHTML = esc(words.join(' ')) + ' <span>' + esc(last) + '</span>';
-    $('#hero-lead').textContent = d.tagline + (d.venue ? ' at ' + d.venue : '') + '. Lineups, ball duty, scores and contacts all in one place.';
+    $('#hero-title').innerHTML = esc(d.name) + (d.venue ? ' <span>at ' + esc(d.venue) + '</span>' : '');
+    $('#hero-lead').textContent = d.tagline + '. Lineups, ball duty, scores and contacts all in one place.';
     const nm = nextMatch(); const spot = $('#spotlight'); const cnt = $('#next-count');
     if (nm) {
       const isToday = nm.date === todayISO();
@@ -260,13 +261,12 @@
     $('#sched-print').onclick = () => window.print();
     observeReveal();
   }
-  function wireMatchActions(root) {
-    $$('[data-act]', root).forEach(b => b.onclick = () => {
-      const m = S.data.matches.find(x => x.id === Number(b.dataset.id)); if (!m) return;
-      if (b.dataset.act === 'score') window.LeagueManage.scoreDialog(m);
-      else if (b.dataset.act === 'lineup') window.LeagueManage.lineupDialog(m);
-      else if (b.dataset.act === 'ics') { const a = document.createElement('a'); a.href = icsBlobURL([m]); a.download = 'match-' + m.date + '.ics'; document.body.appendChild(a); a.click(); a.remove(); }
-    });
+  function wireMatchActions() { /* handled once by delegation in wireMotion */ }
+  function matchAction(b) {
+    const m = S.data.matches.find(x => x.id === Number(b.dataset.id)); if (!m) return;
+    if (b.dataset.act === 'score') window.LeagueManage.scoreDialog(m);
+    else if (b.dataset.act === 'lineup') window.LeagueManage.lineupDialog(m);
+    else if (b.dataset.act === 'ics') { const a = document.createElement('a'); a.href = icsBlobURL([m]); a.download = 'match-' + m.date + '.ics'; document.body.appendChild(a); a.click(); a.remove(); }
   }
 
   /* ---------- rendering: players ---------- */
@@ -353,17 +353,19 @@
     document.addEventListener('pointermove', e => { if (window.matchMedia('(hover:none)').matches) return; const c = e.target.closest && e.target.closest('.card.tilt'); $$('.card.tilt').forEach(el => { if (el !== c) el.style.transform = ''; }); if (!c) return; const r = c.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; c.style.transform = 'perspective(900px) rotateX(' + (-y * 4) + 'deg) rotateY(' + (x * 6) + 'deg) translateY(-2px)'; });
     document.addEventListener('pointerleave', () => $$('.card.tilt').forEach(el => el.style.transform = ''));
     document.addEventListener('click', e => {
+      const act = e.target.closest && e.target.closest('[data-act]'); if (act) matchAction(act);
       const b = e.target.closest && e.target.closest('.btn'); if (b) { const r = b.getBoundingClientRect(); const s = document.createElement('span'); s.className = 'ripple'; const size = Math.max(r.width, r.height); s.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + (e.clientX - r.left - size / 2) + 'px;top:' + (e.clientY - r.top - size / 2) + 'px'; b.appendChild(s); setTimeout(() => s.remove(), 700); }
       const av = e.target.closest && e.target.closest('.avatar'); if (av) { av.classList.add('burst'); setTimeout(() => av.classList.remove('burst'), 1800); }
     });
     document.addEventListener('error', e => { const t = e.target; if (t && t.tagName === 'IMG' && t.dataset.fallback && t.src.indexOf(t.dataset.fallback) < 0) t.src = t.dataset.fallback; }, true);
-    const hero = $('#hero'); window.addEventListener('scroll', () => { const y = window.scrollY; if (y < 900) { const m = $('.hero-media', hero); if (m) m.style.transform = 'translateY(' + y * .28 + 'px)'; $$('.float-ball', hero).forEach((b, i) => b.style.marginTop = (y * (.12 + i * .08)) + 'px'); } }, { passive: true });
+    const hero = $('#hero'); const bar = $('.topbar'); window.addEventListener('scroll', () => { const y = window.scrollY; bar.classList.toggle('scrolled', y > 8); if (y < 900) { const m = $('.hero-media', hero); if (m) m.style.transform = 'translateY(' + y * .28 + 'px)'; } }, { passive: true });
   }
   function wireHero() {
     artImg($('#hero-img'), ART.hero, '');
+    artImg($('#hero-logo'), ART.logoWhite, 'Country Club of Colorado'); artImg($('#foot-logo'), ART.crest, 'Country Club of Colorado');
     const v = $('#hero-video'); const hero = $('#hero');
     const saveData = navigator.connection && navigator.connection.saveData; const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (saveData || reduce || window.innerWidth < 640) return;
+    if (!ART.heroVideo || saveData || reduce || window.innerWidth < 640) return;
     v.innerHTML = '<source src="' + artSrc(ART.heroVideo) + '" type="video/mp4">' + (ART.heroVideo.local && artSrc(ART.heroVideo) !== ART.heroVideo.local ? '<source src="' + ART.heroVideo.local + '" type="video/mp4">' : '');
     v.addEventListener('canplay', () => hero.classList.add('has-video'), { once: true });
     v.addEventListener('error', () => hero.classList.remove('has-video'));

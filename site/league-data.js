@@ -13,9 +13,9 @@
    ===================================================================== */
 window.LEAGUE = {
   "name": "Men's Wednesday Night League",
-  "tagline": "3.0 to 3.5 doubles, Wednesdays 7:00 to 8:30 pm",
+  "tagline": "3.0 to 3.5 doubles on the outdoor courts, Wednesdays 7:00 to 8:30 pm",
   "season": "Fall 2026",
-  "venue": "",
+  "venue": "Country Club of Colorado",
   "venueAddress": "",
   "dayOfWeek": "Wednesday",
   "startTime": "19:00",
