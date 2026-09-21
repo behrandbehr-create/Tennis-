@@ -37,8 +37,8 @@
   function racquetArt(i) { const n = ART.racquets.length; return ART.racquets[((i % n) + n) % n]; }
 
   /* ---------- state ---------- */
-  const STORE_KEY = 'league-data-v1';
-  const S = { data: null, source: 'file', page: 'home', view: 'list', filterPlayer: 0, filterMonth: '', filterPending: false };
+  const STORE_KEY = 'league-data-v2';
+  const S = { data: null, source: 'file', page: 'home', view: 'list', filterPlayer: 0, filterMonth: '', filterPending: false, version: 0, dirty: false, online: null, pushing: false, pushAgain: false, pendingRemote: null, lastSync: null };
 
   function deep(o) { return JSON.parse(JSON.stringify(o)); }
   function loadData() {
@@ -47,12 +47,17 @@
       const raw = localStorage.getItem(STORE_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
-        // local edits win only when they are newer than the shipped file
-        if (!base.updatedAt || !saved.updatedAt || saved.updatedAt >= base.updatedAt) { S.data = saved; S.source = 'device'; return; }
+        if (saved && saved.data && (!base.updatedAt || !saved.data.updatedAt || saved.data.updatedAt >= base.updatedAt)) {
+          S.data = saved.data; S.version = saved.version || 0; S.dirty = !!saved.dirty; S.source = 'device';
+          // the shipped file always decides where the live data lives
+          if (base.syncUrl !== undefined) S.data.syncUrl = base.syncUrl;
+          return;
+        }
       }
     } catch (e) { /* ignore */ }
     S.data = base; S.source = 'file';
   }
+  function cache() { try { localStorage.setItem(STORE_KEY, JSON.stringify({ data: S.data, version: S.version, dirty: S.dirty })); } catch (e) { /* storage full or blocked */ } }
   function normalize(d) {
     d.players = (d.players || []).map(p => Object.assign({ role: 'player', active: true, avatar: 0, phone: '', email: '', num: '' }, p));
     d.matches = (d.matches || []).map(m => Object.assign({ teamA: [], teamB: [], sets: [], status: 'scheduled', note: '' }, m));
@@ -63,11 +68,10 @@
     return d;
   }
   function save(note) {
-    S.data.updatedAt = new Date().toISOString();
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(S.data)); S.source = 'device'; } catch (e) { toast('Could not save on this device'); }
-    if (note !== false) toast(note || 'Saved on this device');
+    S.data.updatedAt = new Date().toISOString(); S.dirty = true; cache(); S.source = 'device';
     renderAll();
-    if (S.data.syncUrl) pushSync();
+    if (S.data.syncUrl) { pushSync().then(ok => { if (note !== false) toast(ok ? (note || 'Saved') + ' · live for everyone' : (note || 'Saved') + ' · will sync when back online'); }); }
+    else if (note !== false) toast(note || 'Saved on this device');
   }
 
   /* ---------- helpers ---------- */
@@ -286,10 +290,12 @@
     observeReveal();
   }
   function wireMatchActions() { /* handled once by delegation in wireMotion */ }
-  function matchAction(b) {
-    const m = S.data.matches.find(x => x.id === Number(b.dataset.id)); if (!m) return;
-    if (b.dataset.act === 'score') window.LeagueManage.scoreDialog(m);
-    else if (b.dataset.act === 'lineup') window.LeagueManage.lineupDialog(m);
+  async function matchAction(b) {
+    const id = Number(b.dataset.id); const act = b.dataset.act;
+    if (act === 'score' || act === 'lineup') await freshen();
+    const m = S.data.matches.find(x => x.id === id); if (!m) return;
+    if (act === 'score') window.LeagueManage.scoreDialog(m);
+    else if (act === 'lineup') window.LeagueManage.lineupDialog(m);
     else if (b.dataset.act === 'ics') { const a = document.createElement('a'); a.href = icsBlobURL([m]); a.download = 'match-' + m.date + '.ics'; document.body.appendChild(a); a.click(); a.remove(); }
   }
 
@@ -328,7 +334,7 @@
 
   /* ---------- modal ---------- */
   function openModal(title, html) { const m = $('#modal'); $('#modal-title').textContent = title; $('#modal-body').innerHTML = html; if (!m.open) m.showModal(); return m; }
-  function closeModal() { const m = $('#modal'); if (m.open) m.close(); }
+  function closeModal() { const m = $('#modal'); if (m.open) m.close(); setTimeout(applyPendingRemote, 50); }
 
   /* ---------- share link: encode the whole league into a URL ---------- */
   function b64url(bytes) { let s = ''; bytes.forEach(b => s += String.fromCharCode(b)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
@@ -359,12 +365,71 @@
     return true;
   }
 
-  /* ---------- optional cloud sync (see server/worker.js) ---------- */
-  async function pullSync() {
-    if (!S.data.syncUrl) return;
-    try { const r = await fetch(S.data.syncUrl, { cache: 'no-store' }); if (!r.ok) return; const remote = normalize(await r.json()); if (remote.updatedAt && (!S.data.updatedAt || remote.updatedAt > S.data.updatedAt)) { S.data = remote; try { localStorage.setItem(STORE_KEY, JSON.stringify(S.data)); } catch (e) { } S.source = 'cloud'; renderAll(); toast('Updated from the league server'); } } catch (e) { /* offline */ }
+  /* ---------- live sync: one shared copy for everyone ---------- */
+  function editingNow() { const m = $('#modal'); const a = document.activeElement; return (m && m.open) || S.page === 'manage' || (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT')); }
+  function adoptRemote(remote, version) {
+    S.data = normalize(remote); if (S.data.syncUrl === undefined && window.LEAGUE) S.data.syncUrl = window.LEAGUE.syncUrl; S.version = version; S.dirty = false; S.source = 'cloud'; S.pendingRemote = null; cache(); renderAll();
   }
-  async function pushSync() { try { const r = await fetch(S.data.syncUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(S.data) }); toast(r.ok ? 'Shared with everyone' : 'Server refused the update'); } catch (e) { toast('Saved here, will retry when online'); } }
+  async function pullSync(opts) {
+    opts = opts || {}; if (!S.data.syncUrl) return false;
+    try {
+      const r = await fetch(S.data.syncUrl, { cache: 'no-store' }); if (!r.ok) throw new Error('bad status ' + r.status);
+      const body = await r.json(); S.online = true; S.lastSync = Date.now(); syncBadge();
+      if (!body.data) { // nothing on the server yet: seed it with what this device has
+        if (!opts.noSeed) { S.version = body.version || 0; S.dirty = true; await pushSync(); }
+        return true;
+      }
+      if (S.dirty && body.version === S.version) { await pushSync(); return true; } // our unsent edit still applies cleanly
+      if (body.version > S.version || (!S.dirty && JSON.stringify(body.data) !== JSON.stringify(S.data))) {
+        if (S.dirty) { S.dirty = false; toast('Someone else saved first. Showing the latest version.'); }
+        if (editingNow() && !opts.force) { S.pendingRemote = body; return true; }
+        adoptRemote(body.data, body.version); if (opts.announce) toast('Updated with the latest scores');
+      } else if (body.version === S.version && !S.dirty) { cache(); }
+      return true;
+    } catch (e) { S.online = false; syncBadge(); return false; }
+  }
+  async function pushSync() {
+    if (!S.data.syncUrl) return false;
+    if (S.pushing) { S.pushAgain = true; return true; }
+    S.pushing = true; syncBadge('saving');
+    try {
+      const r = await fetch(S.data.syncUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ baseVersion: S.version, data: S.data }) });
+      if (r.status === 409) {
+        const body = await r.json(); S.pushing = false; S.pushAgain = false;
+        adoptRemote(body.data, body.version); S.online = true; syncBadge();
+        toast('Someone else saved a moment ago. Refreshed to the latest version, please redo your change.');
+        return false;
+      }
+      if (!r.ok) throw new Error('bad status ' + r.status);
+      const body = await r.json(); S.version = body.version; S.dirty = false; S.online = true; S.lastSync = Date.now(); if (body.updatedAt) S.data.updatedAt = body.updatedAt; cache();
+      S.pushing = false; syncBadge();
+      if (S.pushAgain) { S.pushAgain = false; return pushSync(); }
+      $('#foot-updated').textContent = footNote();
+      return true;
+    } catch (e) { S.pushing = false; S.pushAgain = false; S.online = false; syncBadge(); return false; }
+  }
+  function syncBadge(state) {
+    const b = $('#sync-badge'); if (!b) return;
+    if (!S.data.syncUrl) { b.className = 'sync-badge hidden'; return; }
+    if (state === 'saving') { b.className = 'sync-badge saving'; b.textContent = 'Saving…'; return; }
+    if (S.online === false) { b.className = 'sync-badge off'; b.textContent = S.dirty ? 'Offline · unsaved' : 'Offline'; return; }
+    if (S.dirty) { b.className = 'sync-badge saving'; b.textContent = 'Syncing…'; return; }
+    b.className = 'sync-badge on'; b.textContent = 'Live';
+  }
+  function footNote() {
+    const d = S.data; const when = d.updatedAt ? new Date(d.updatedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'n/a';
+    return d.syncUrl ? 'Shared league data · last change ' + when + (S.online === false ? ' · offline, showing the last copy on this phone' : '') : 'Data last updated ' + when + ' · ' + (S.source === 'file' ? 'from league-data.js' : 'edits saved on this device');
+  }
+  function startSyncLoop() {
+    if (!S.data.syncUrl) return;
+    const tick = () => { if (document.visibilityState === 'visible') pullSync({ announce: true }); };
+    setInterval(tick, 45000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pullSync({ announce: true }); });
+    window.addEventListener('online', () => { if (S.dirty) pushSync(); else pullSync(); });
+    window.addEventListener('focus', () => pullSync({ announce: true }));
+  }
+  function applyPendingRemote() { if (S.pendingRemote && !editingNow()) { const b = S.pendingRemote; adoptRemote(b.data, b.version); } }
+  async function freshen() { if (!S.data.syncUrl || S.dirty) return; await Promise.race([pullSync({ force: true }), new Promise(res => setTimeout(res, 2500))]); }
 
   /* ---------- motion ---------- */
   let revealObs = null;
@@ -396,13 +461,22 @@
     v.load(); const p = v.play(); if (p && p.catch) p.catch(() => { });
   }
 
+  /* ---------- help guide ---------- */
+  function wireHelp() {
+    const open = () => { const h = $('#help'); if (!h.open) h.showModal(); };
+    $$('[data-help]').forEach(b => b.onclick = e => { e.preventDefault(); open(); });
+    $('#help-close').onclick = () => $('#help').close();
+    $('#help').addEventListener('click', e => { if (e.target === $('#help')) $('#help').close(); });
+    $$('#help details').forEach(d => d.addEventListener('toggle', () => { if (d.open) $$('#help details').forEach(o => { if (o !== d && o.open) o.open = false; }); }));
+  }
+
   /* ---------- routing & shell ---------- */
   function route() {
     let h = (location.hash || '#home').slice(1); if (h.startsWith('u=')) return;
     if (!['home', 'schedule', 'players', 'standings', 'manage'].includes(h)) h = 'home';
     S.page = h; $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + h)); $$('[data-page]').forEach(a => a.classList.toggle('active', a.dataset.page === h));
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
-    if (h === 'manage') window.LeagueManage.render();
+    if (h === 'manage') { freshen().then(() => window.LeagueManage.render()); } else applyPendingRemote();
     observeReveal();
   }
   function renderAll() {
@@ -413,17 +487,19 @@
     renderHome(); renderSchedule(); renderPlayers(); renderStandings();
     if (S.page === 'manage') window.LeagueManage.render();
     $('#foot-text').textContent = d.name + (d.venue ? ' · ' + d.venue : '') + ' · times shown in ' + d.timeZone.replace(/_/g, ' ');
-    $('#foot-updated').textContent = 'Data last updated ' + (d.updatedAt ? new Date(d.updatedAt).toLocaleString() : 'n/a') + ' · source: ' + (S.source === 'file' ? 'league-data.js' : S.source === 'cloud' ? 'league server' : 'edits saved on this device');
+    $('#foot-updated').textContent = footNote(); syncBadge();
   }
 
   async function init() {
     loadData(); S.data = normalize(S.data);
     $('#modal-close').onclick = closeModal; $('#modal').addEventListener('click', e => { if (e.target === $('#modal')) closeModal(); });
-    wireMotion(); wireHero(); renderAll();
-    await handleIncoming(); route(); window.addEventListener('hashchange', route);
-    pullSync();
+    wireMotion(); wireHero(); wireHelp(); renderAll();
+    const incoming = await handleIncoming();
+    if (!incoming) await Promise.race([pullSync(), new Promise(res => setTimeout(res, 4000))]);
+    route(); window.addEventListener('hashchange', route);
+    startSyncLoop();
   }
 
-  window.League = { S, save, pendingMatches, matchEnded, normalize, player, pname, pshort, activePlayers, standings, matchResult, validateSets, avatarHTML, ballHTML, artSrc, racquetArt, ART, esc, $, $$, todayISO, fmtDate, dow, time12, openModal, closeModal, toast, download, shareURL, encodeShare, telNum, smsLink, mailLink, renderAll, deep, STORE_KEY, lineup, statusLabel, matchCard, wireMatchActions, pullSync };
+  window.League = { S, save, pendingMatches, matchEnded, pullSync, pushSync, freshen, syncBadge, normalize, player, pname, pshort, activePlayers, standings, matchResult, validateSets, avatarHTML, ballHTML, artSrc, racquetArt, ART, esc, $, $$, todayISO, fmtDate, dow, time12, openModal, closeModal, toast, download, shareURL, encodeShare, telNum, smsLink, mailLink, renderAll, deep, STORE_KEY, lineup, statusLabel, matchCard, wireMatchActions };
   document.addEventListener('DOMContentLoaded', init);
 })();

@@ -1,36 +1,32 @@
 # Tennis league website kit
 
-Two folders are in this zip:
+Folders in this kit:
 
-- **wednesday-night-tennis/**  the finished Men's Wednesday Night League site
-  with the fall 2026 roster, contacts and schedule already loaded.
-- **league-template/**  the same site with blank data, for building sites for
-  other leagues. Start with `league-template/SETUP-GUIDE.md`.
+- **wednesday-night-tennis/**  the live Men's Wednesday Night League site
+  (Country Club of Colorado, fall 2026). Already connected to the shared data
+  server, so scores and lineup changes appear for everyone automatically.
+- **league-template/**  the same site with blank data, for other leagues.
+  Start with `league-template/SETUP-GUIDE.md`.
+- **Wednesday-Night-Tennis-DEPLOY.zip** and **League-Template-DEPLOY.zip**
+  ready to drop straight onto app.netlify.com/drop.
 
-Each folder is a complete website: open `index.html` or upload the folder to any
-static host. No installs, no accounts required. `README.md` inside each folder
-explains day-to-day editing (players, schedule, scores) and publishing.
+Each folder is a complete website: open `index.html` or upload the folder to a
+static host. `README.md` inside explains day-to-day use, and the site's own
+**? Help** button walks players and captains through every feature.
 
-## What players get
-- Home: next match, countdown, who brings balls (spinning ball), announcements,
-  leaderboard, rules, add-season-to-calendar.
-- Schedule: every night with lineups, ball duty, scores, list or calendar view,
-  filter by player or month, text the four players in one tap, per-match calendar
-  file, enter score right there.
-- Players: contact cards with Text, Call, Email and Save contact buttons, text
-  or email the whole group, sub list.
-- Standings: auto-computed from played matches with form dots and stat tiles.
-- Manage: everything is editable, changes save on the device, publish by
-  downloading `league-data.js` or texting a share link. Optional live sync
-  server in `server/`.
-
-## Artwork
-The spinning racquets and tennis ball were generated with Higgsfield. The
-Country Club of Colorado logos and the outdoor-courts hero photo come from the
-club brand gallery. All of it is hosted in your Higgsfield library; the site
-loads those hosted copies when online and falls back to the local files in
-`assets/` when opened offline or from a folder. Brand colors: forest green
-#344F2C, olive #728728, paper white, soft gray, charcoal.
+## How saving works
+Every change on any phone goes to a small shared server (hosted on the
+league's Higgsfield account) and every other phone picks it up within about a
+minute. Offline changes wait and send later. If two people save within the same
+few seconds, the second one is asked to redo their change so nothing is lost
+silently. Backups can be downloaded any time from Manage → Backup & tools.
 
 ## Uploading to Netlify (or any host)
-The host needs `index.html` at the top level of what you upload. Drag the **folder itself** (or a zip made from the *contents* of the folder, not the folder wrapped in another folder) onto app.netlify.com/drop. A ready-made deploy zip is included in the kit for each site.
+The host needs `index.html` at the top level of what you upload. Use the
+DEPLOY zips, or drag the folder itself, not a zip that wraps the folder in
+another folder.
+
+## Artwork and colors
+Country Club of Colorado logos and the outdoor-courts photo come from the club
+brand gallery; the racquets and ball were generated with Higgsfield. Brand
+colors: forest green #344F2C, olive #728728, paper white, soft gray, charcoal.

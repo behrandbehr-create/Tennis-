@@ -24,8 +24,8 @@ window.LEAGUE = {
   "phoneCountryCode": "+1",
   "playersPerMatch": 4,
   "editPin": "",
-  "syncUrl": "",
-  "organizer": { "name": "Brandon Behr", "phone": "719-238-4912", "email": "brandon@behrandbehr.com" },
+  "syncUrl": "https://wednesday-night-tennis.higgsfield.app/api/state?league=ccc-mens-wednesday",
+  "organizer": { "name": "Roger Anderson", "phone": "214-728-8332", "email": "roger.anderson@ccofcolorado.com" },
   "rules": [
     "Matches are doubles, 7:00 to 8:30 pm. Play as many sets as time allows.",
     "The player marked with the tennis ball brings a new can of balls.",
@@ -63,5 +63,5 @@ window.LEAGUE = {
     { "id": 12, "date": "2026-12-09", "teamA": [4, 6], "teamB": [1, 7], "balls": 4, "status": "scheduled", "sets": [], "note": "" },
     { "id": 13, "date": "2026-12-16", "teamA": [1, 6], "teamB": [5, 3], "balls": 1, "status": "scheduled", "sets": [], "note": "Last match of the season." }
   ],
-  "updatedAt": "2026-09-21T00:00:00Z"
+  "updatedAt": "2026-09-21T21:00:00Z"
 };

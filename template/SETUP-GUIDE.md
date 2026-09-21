@@ -1,28 +1,31 @@
 # Set up a new league site in 15 minutes
 
-You do not need to write code. Everything happens in the browser.
+No coding. Everything happens in the browser.
 
 1. **Copy this folder** and rename it for the league (example: `mens-3-5-thursday`).
 2. **Open `index.html`** in Chrome or Safari.
 3. Go to the **Manage** tab.
-4. **League info**: type the league name, tagline, season, club, day, start and
-   end time, time zone, and your contact info as organizer. Add a PIN if you
-   want to stop players from editing.
-5. **Players**: rename the placeholder players, add phone and email, add subs,
+4. **League info**: league name, tagline, season, club, day, start and end time,
+   time zone, and the organizer's contact info. Optional: a captain PIN so only
+   people with the code can edit.
+5. **Players**: rename the placeholder players, add phones and emails, add subs,
    remove extras. Pick a racquet for each player.
-6. **Schedule generator**: pick the first night, number of weeks, holidays to
-   skip, and which players rotate. Press **Replace whole schedule**. Adjust any
-   night afterwards on Schedule & scores.
-7. **Publish & share**: press **Download league-data.js**. Move the downloaded
-   file into the folder, replacing the old one.
-8. **Upload the folder** to a web host (Netlify Drop is free and takes a folder
+6. **Backup & tools → Season generator**: pick the first night, number of weeks,
+   dates to skip, and the players in the rotation. Press **Replace whole
+   schedule**. Adjust any night afterwards on Schedule & scores.
+7. **Turn on live sharing** so every phone stays in sync automatically:
+   Manage → League info → **Advanced settings** → Shared data address. Paste
+
+       https://wednesday-night-tennis.higgsfield.app/api/state?league=YOUR-LEAGUE-NAME
+
+   and replace YOUR-LEAGUE-NAME with a short name using only lowercase letters,
+   numbers and dashes (example: `thursday-35-doubles`). Each different name is
+   its own separate league.
+8. **Backup & tools → Download backup**. Move the downloaded file into the
+   folder, replacing `league-data.js`. This makes your setup the starting point
+   for everyone who opens the site.
+9. **Upload the folder** to Netlify (app.netlify.com/drop takes a folder
    drag-and-drop) and send the link to the players.
 
-That is it. To change anything later, repeat steps 3 to 8, or use the share link
-to push quick updates without re-uploading.
-
-Tip: players can enter scores themselves from the Schedule tab. If you set a PIN,
-share it with a captain so someone other than you can keep scores current.
-
-## Uploading to Netlify (or any host)
-The host needs `index.html` at the top level of what you upload. Drag the **folder itself** (or a zip made from the *contents* of the folder, not the folder wrapped in another folder) onto app.netlify.com/drop. A ready-made deploy zip is included in the kit for each site.
+Players can enter scores themselves from the Schedule tab or the home page.
+The **? Help** button on the site explains everything to them.

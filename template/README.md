@@ -1,47 +1,30 @@
-# League website: how to run it
+# League website: how it works
 
-This folder is the whole website. There is no build step and nothing to install.
+This folder is the whole website. Upload it to Netlify (or any static host) and
+send players the link. Nothing to install.
 
-## Open it
-- Double-click `index.html` to view it on a computer.
-- To share it with the league, upload this folder to any static web host and send
-  players the link. Free options that take a drag-and-drop folder: Netlify Drop
-  (app.netlify.com/drop), Cloudflare Pages, GitHub Pages, or your club's website.
-  Higgsfield websites also work: upload the folder as static files.
-- Players should "Add to Home Screen" on their phone so it opens like an app.
+## Live sharing (already on for this league)
+Every change made on the site, from any phone, is stored on the league's shared
+data server and shows up for everyone within about a minute. The green **Live**
+badge at the top confirms the connection. If a phone is offline, its change waits
+and is sent automatically when it is back online.
 
-## Edit players, schedule and scores
-Open the **Manage** tab on the site.
-- **Players**: change names, numbers, phones, emails, pick a racquet, add a player
-  or sub, mark someone inactive, or **Replace everywhere** when someone drops out
-  and another player takes their remaining weeks.
-- **Schedule & scores**: enter set scores, change who plays, who brings balls,
-  move a date, cancel a night, add a night.
-- **League info**: name, season, venue, times, time zone, rules, announcements,
-  optional PIN, optional live-sync server.
-- **Schedule generator**: builds a balanced rotation for any number of weeks.
-- **Publish & share**: two ways to get your edits to everyone.
-  1. **Download league-data.js** and replace the file in this folder on your host.
-  2. **Copy share link** and text it. Opening the link offers to apply the update.
+## Everyday use
+- **Home**: next match with countdown, who brings balls, nights still waiting for
+  a score, recent results, announcements, leaderboard.
+- **Schedule**: every night with lineups and ball duty. Enter score, change
+  lineup, text the four players, add to calendar.
+- **Players**: text, call, email, save contact, text everyone.
+- **Standings**: automatic.
+- **Manage**: add or drop players, edit any night, post announcements, backups.
+- **? Help** (top right): a short walkthrough of all of the above.
 
-Scores can also be entered straight from the Schedule tab (Enter score button).
+## Backups
+Manage → Backup & tools → **Download backup** saves everything to a file.
+**Import backup** restores it. Do this once a month or before big roster changes.
 
-## Edit by hand instead
-Everything lives in `league-data.js`. Open it in any text editor. Dates are
-`YYYY-MM-DD`, times are 24-hour (`19:00`), lineups use player `id` numbers.
-
-## Standings rules
-Only matches marked **Played** count. Rank is by match wins, then win
-percentage, then set difference, then game difference. Match tiebreaks count as
-a set but not toward games. Unfinished, canceled and scheduled matches do not
-count.
-
-## Files
-- `index.html`, `css/`, `js/`  the site itself (no need to touch)
-- `league-data.js`  all league content
-- `assets/`  racquet, ball, logo and court artwork (local fallbacks; the site
-  prefers the hosted high-resolution club versions when online)
-- `server/`  optional live-sync server, see server/README.md
-
-## Uploading to Netlify (or any host)
-The host needs `index.html` at the top level of what you upload. Drag the **folder itself** (or a zip made from the *contents* of the folder, not the folder wrapped in another folder) onto app.netlify.com/drop. A ready-made deploy zip is included in the kit for each site.
+## Advanced
+- `league-data.js` holds the starting data and the shared data address. Edit it
+  only if you are moving the league to a different server.
+- `server/` contains an optional self-hosted server for people who want to run
+  their own instead of the shared one. Not needed for normal use.

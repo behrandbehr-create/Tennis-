@@ -28,13 +28,20 @@
       $('#pin-go').onclick = () => { if ($('#pin').value === d().editPin) { M.unlocked = true; try { sessionStorage.setItem('league-unlocked', d().editPin); } catch (e) { } render(); } else L.toast('Wrong PIN'); };
       return;
     }
-    root.innerHTML = '<div class="manage-tabs">' + [['players', 'Players'], ['schedule', 'Schedule & scores'], ['league', 'League info'], ['generate', 'Schedule generator'], ['publish', 'Publish & share']].map(t => '<button class="chip' + (M.tab === t[0] ? ' on' : '') + '" data-mtab="' + t[0] + '">' + t[1] + '</button>').join('') + '</div><div id="manage-body"></div>' + savebar();
+    root.innerHTML = '<div class="manage-tabs">' + [['players', 'Players'], ['schedule', 'Schedule & scores'], ['league', 'League info'], ['publish', 'Backup & tools']].map(t => '<button class="chip' + (M.tab === t[0] ? ' on' : '') + '" data-mtab="' + t[0] + '">' + t[1] + '</button>').join('') + '</div><div id="manage-body"></div>' + savebar();
     $$('[data-mtab]', root).forEach(b => b.onclick = () => { M.tab = b.dataset.mtab; render(); });
-    ({ players: renderPlayers, schedule: renderSchedule, league: renderLeague, generate: renderGenerator, publish: renderPublish })[M.tab]();
+    ({ players: renderPlayers, schedule: renderSchedule, league: renderLeague, generate: renderGenerator, publish: renderPublish })[M.tab] ? ({ players: renderPlayers, schedule: renderSchedule, league: renderLeague, generate: renderGenerator, publish: renderPublish })[M.tab]() : renderPlayers();
     wireSavebar();
   }
-  function savebar() { return '<div class="savebar"><span class="status">' + (L.S.source === 'file' ? 'Showing the data from league-data.js.' : 'Changes are saved on this device. Publish so everyone else sees them.') + '</span><button class="btn primary small" id="sb-download">Download league-data.js</button><button class="btn ghost small" id="sb-share">Copy share link</button></div>'; }
-  function wireSavebar() { const dl = $('#sb-download'); if (dl) dl.onclick = downloadData; const sh = $('#sb-share'); if (sh) sh.onclick = copyShare; }
+  function savebar() {
+    if (d().syncUrl) return '<div class="savebar"><span class="status" id="sb-status">Changes save automatically and are shared with everyone.</span><button class="btn primary small" id="sb-save">Save changes</button><button class="btn ghost small" id="sb-help" data-help>How this works</button></div>';
+    return '<div class="savebar"><span class="status">' + (L.S.source === 'file' ? 'Showing the data from league-data.js.' : 'Changes are saved on this device only.') + '</span><button class="btn primary small" id="sb-download">Download league-data.js</button><button class="btn ghost small" id="sb-share">Copy share link</button></div>';
+  }
+  function wireSavebar() {
+    const dl = $('#sb-download'); if (dl) dl.onclick = downloadData; const sh = $('#sb-share'); if (sh) sh.onclick = copyShare;
+    const sv = $('#sb-save'); if (sv) sv.onclick = async () => { sv.disabled = true; sv.textContent = 'Saving…'; L.S.dirty = true; const ok = await L.pushSync(); sv.disabled = false; sv.textContent = 'Save changes'; const st = $('#sb-status'); if (st) st.textContent = ok ? 'Saved. Everyone in the league now sees this version.' : 'Could not reach the league server. Your changes are kept on this phone and will be sent when you are back online.'; L.toast(ok ? 'Saved for everyone' : 'Offline, will retry'); };
+    const hb = $('#sb-help'); if (hb) hb.onclick = e => { e.preventDefault(); const h = $('#help'); if (!h.open) h.showModal(); };
+  }
 
   /* ---------- players ---------- */
   function renderPlayers() {
@@ -134,7 +141,7 @@
       '<h3 style="margin:18px 0 8px">Organizer</h3><div class="form-grid"><label class="f">Name<input data-o="name" value="' + esc(o.name || '') + '"></label><label class="f">Phone<input data-o="phone" value="' + esc(o.phone || '') + '"></label><label class="f">Email<input data-o="email" value="' + esc(o.email || '') + '"></label></div>' +
       '<h3 style="margin:18px 0 8px">Rules (one per line)</h3><label class="f"><textarea data-l="rules" rows="5">' + esc((x.rules || []).join('\n')) + '</textarea></label>' +
       '<h3 style="margin:18px 0 8px">Announcements</h3><div id="ann-list">' + (x.announcements || []).map((a, i) => '<div class="announce" style="display:flex;gap:10px;align-items:center"><div style="flex:1"><small>' + esc(a.date || '') + '</small><div>' + esc(a.text) + '</div></div><button class="btn danger small" data-ann-del="' + i + '">Remove</button></div>').join('') + '</div><div class="form-grid" style="margin-top:8px"><label class="f">Date<input type="date" id="ann-date" value="' + L.todayISO() + '"></label><label class="f" style="grid-column:span 2">Message<input id="ann-text" placeholder="Courts 5 and 6 this week"></label></div><div style="margin-top:10px"><button class="btn court small" id="ann-add">Post announcement</button></div>' +
-      '<h3 style="margin:18px 0 8px">Protection & sharing</h3><div class="form-grid"><label class="f">Captain PIN (optional)<input data-l="editPin" value="' + esc(x.editPin || '') + '" placeholder="blank = anyone can edit"></label><label class="f">League server URL (optional)<input data-l="syncUrl" value="' + esc(x.syncUrl || '') + '" placeholder="https://..."></label></div><p style="color:var(--muted);font-size:.85rem;margin:8px 0 0">A PIN stops casual visitors from editing. The server URL turns on live sharing; see server/README.md in the download.</p></div>';
+      '<details class="advanced"><summary>Advanced settings</summary><div class="form-grid" style="margin-top:10px"><label class="f">Captain PIN (optional)<input data-l="editPin" value="' + esc(x.editPin || '') + '" placeholder="blank = anyone can edit"></label><label class="f">Shared data address<input data-l="syncUrl" value="' + esc(x.syncUrl || '') + '" placeholder="https://..."></label></div><p style="color:var(--muted);font-size:.85rem;margin:8px 0 0">A PIN makes the Manage tab ask for a code before editing. The shared data address is where everyone\'s changes are stored; leave it as it is unless you are moving the league to a new server.</p></div></details></div>';
     $$('[data-l]', b).forEach(i => i.onchange = () => { const k = i.dataset.l; x[k] = k === 'rules' ? i.value.split('\n').map(s => s.trim()).filter(Boolean) : i.value.trim(); L.save(); });
     $$('[data-o]', b).forEach(i => i.onchange = () => { x.organizer = x.organizer || {}; x.organizer[i.dataset.o] = i.value.trim(); L.save(); });
     $$('[data-ann-del]', b).forEach(bt => bt.onclick = () => { x.announcements.splice(Number(bt.dataset.annDel), 1); L.save('Announcement removed'); });
@@ -144,7 +151,7 @@
   /* ---------- schedule generator ---------- */
   function renderGenerator() {
     const b = $('#manage-body'); const x = d();
-    b.innerHTML = '<div class="card"><h3>Build a season in one click</h3><p style="color:var(--muted)">Pick the players, the first night and how many weeks. The generator rotates everyone evenly, mixes partners, and spreads ball duty. You can fine-tune any match afterwards.</p>' +
+    b.innerHTML = '<p><a href="#manage" id="gen-back">← Back to Backup &amp; tools</a></p><div class="card"><h3>Build a season in one click</h3><p style="color:var(--muted)">Pick the players, the first night and how many weeks. The generator rotates everyone evenly, mixes partners, and spreads ball duty. You can fine-tune any match afterwards.</p>' +
       '<div class="form-grid"><label class="f">First match date<input type="date" id="g-start" value="' + esc(nextWeekday(x.dayOfWeek)) + '"></label><label class="f">Number of weeks<input type="number" id="g-weeks" min="1" max="40" value="12"></label><label class="f">Players per night<select id="g-per">' + opt(4, '4 (doubles)', x.playersPerMatch) + opt(2, '2 (singles)', x.playersPerMatch) + '</select></label><label class="f">Skip these dates (comma separated)<input id="g-skip" placeholder="2026-11-25, 2026-12-23"></label></div>' +
       '<div style="margin-top:12px"><span class="eyebrow">Players in the rotation</span><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">' + x.players.filter(p => p.active !== false).map(p => '<label class="chip" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" data-gp="' + p.id + '"' + (p.role !== 'sub' ? ' checked' : '') + '> ' + esc(p.name) + '</label>').join('') + '</div></div>' +
       '<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn court" id="g-append">Add to schedule</button><button class="btn danger" id="g-replace">Replace whole schedule</button></div><div id="g-preview" style="margin-top:12px"></div></div>';
@@ -155,7 +162,7 @@
       const gen = generate(ids, per, weeks, date, skip); if (replace) x.matches = []; let id = nextId(x.matches); gen.forEach(m => { m.id = id++; x.matches.push(m); });
       L.save(gen.length + ' match nights generated'); M.tab = 'schedule'; render();
     };
-    $('#g-append').onclick = () => run(false); $('#g-replace').onclick = () => run(true);
+    $('#g-append').onclick = () => run(false); $('#g-replace').onclick = () => run(true); $('#gen-back').onclick = e => { e.preventDefault(); M.tab = 'publish'; render(); };
   }
   function nextWeekday(name) { const idx = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(name); const t = L.todayISO(); const [y, m, dd] = t.split('-').map(Number); const dt = new Date(Date.UTC(y, m - 1, dd)); if (idx >= 0) { let diff = (idx - dt.getUTCDay() + 7) % 7; if (!diff) diff = 7; dt.setUTCDate(dt.getUTCDate() + diff); } return dt.toISOString().slice(0, 10); }
   function generate(ids, per, weeks, start, skip) {
@@ -182,23 +189,25 @@
 
   /* ---------- publish ---------- */
   function renderPublish() {
-    const b = $('#manage-body');
+    const b = $('#manage-body'); const live = !!d().syncUrl;
     b.innerHTML = '<div class="grid cols-2">' +
-      '<div class="card"><h3>1. Download the data file</h3><p style="color:var(--muted)">Creates a fresh <b>league-data.js</b> with everything you changed. Put it in the website folder (replacing the old one) and re-upload the folder to your host. That is the whole publish step.</p><button class="btn primary" id="pub-download">Download league-data.js</button></div>' +
-      '<div class="card"><h3>2. Or text a share link</h3><p style="color:var(--muted)">The link carries the whole league inside it. Anyone who opens it gets a banner asking to apply the update on their phone. Great for quick score updates between uploads.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn court" id="pub-share">Copy share link</button><button class="btn soft" id="pub-native">Share…</button></div></div>' +
-      '<div class="card"><h3>Live sharing (optional)</h3><p style="color:var(--muted)">' + (d().syncUrl ? 'Connected to <b>' + esc(d().syncUrl) + '</b>. Saves are sent there automatically.' : 'Set a league server URL on the League info tab to have every phone stay in sync automatically. Setup instructions are in server/README.md.') + '</p><div style="display:flex;gap:8px;flex-wrap:wrap">' + (d().syncUrl ? '<button class="btn soft" id="pub-pull">Pull latest</button>' : '') + '</div></div>' +
-      '<div class="card"><h3>Restore or import</h3><p style="color:var(--muted)">Import a league-data.js file someone sent you, or throw away the edits on this device and go back to the file that shipped with the site.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn soft" style="cursor:pointer">Import file<input type="file" id="pub-import" accept=".js,.json" hidden></label><button class="btn danger" id="pub-reset">Reset this device</button></div></div></div>';
-    $('#pub-download').onclick = downloadData; $('#pub-share').onclick = copyShare;
-    $('#pub-native').onclick = async () => { const url = await L.shareURL(); if (navigator.share) { try { await navigator.share({ title: d().name, text: 'League update', url }); } catch (e) { } } else copyShare(); };
-    const pull = $('#pub-pull'); if (pull) pull.onclick = () => L.pullSync();
-    $('#pub-import').onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { let txt = r.result; const i = txt.indexOf('{'); const j = txt.lastIndexOf('}'); const obj = JSON.parse(txt.slice(i, j + 1)); L.S.data = L.normalize(obj); L.save('Imported ' + f.name); render(); } catch (err) { L.toast('Could not read that file'); } }; r.readAsText(f); };
-    $('#pub-reset').onclick = () => { if (confirm('Discard the edits saved on this device and reload the shipped league-data.js?')) { try { localStorage.removeItem(L.STORE_KEY); } catch (e) { } location.reload(); } };
+      (live ? '<div class="card"><h3>Sharing status</h3><p style="color:var(--muted)">This league is <b>live</b>: every change on this tab is stored on the league server and shown to everyone within about a minute. Nothing else to do.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn court" id="pub-pull">Refresh from server</button><button class="btn soft" id="pub-push">Send my copy now</button></div></div>' : '<div class="card"><h3>Publish your changes</h3><p style="color:var(--muted)">Download <b>league-data.js</b> and replace the file in the website folder, then re-upload the folder to your host.</p><button class="btn primary" id="pub-download">Download league-data.js</button></div>') +
+      '<div class="card"><h3>Backup</h3><p style="color:var(--muted)">Save a copy of every player, match and score to a file on your device. Restore it later with Import if anything ever goes wrong.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn soft" id="pub-backup">Download backup</button><label class="btn soft" style="cursor:pointer">Import backup<input type="file" id="pub-import" accept=".js,.json" hidden></label></div></div>' +
+      '<div class="card"><h3>Season generator</h3><p style="color:var(--muted)">Starting a new season? Build a balanced rotation for any group of players in one click, then fine-tune nights on the Schedule tab.</p><button class="btn soft" id="pub-gen">Open the generator</button></div>' +
+      '<div class="card"><h3>Share link</h3><p style="color:var(--muted)">Copies a link that carries a snapshot of the whole league. Handy for sending someone the current state by text when they are offline.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn soft" id="pub-share">Copy share link</button></div></div>' +
+      '<div class="card"><h3>Reset this phone</h3><p style="color:var(--muted)">Throws away the copy stored on this device and reloads from the league server. Use it if this phone ever looks out of date.</p><button class="btn danger" id="pub-reset">Reset this device</button></div></div>';
+    const dl = $('#pub-download'); if (dl) dl.onclick = downloadData; $('#pub-backup').onclick = downloadData; $('#pub-share').onclick = copyShare;
+    const pull = $('#pub-pull'); if (pull) pull.onclick = async () => { const ok = await L.pullSync({ force: true, announce: true }); L.toast(ok ? 'Up to date' : 'Could not reach the server'); render(); };
+    const push = $('#pub-push'); if (push) push.onclick = async () => { L.S.dirty = true; const ok = await L.pushSync(); L.toast(ok ? 'Sent. Everyone now sees this copy.' : 'Could not reach the server'); };
+    $('#pub-gen').onclick = () => { M.tab = 'generate'; render(); };
+    $('#pub-import').onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { let txt = r.result; const i = txt.indexOf('{'); const j = txt.lastIndexOf('}'); const obj = JSON.parse(txt.slice(i, j + 1)); if (!Array.isArray(obj.players) || !Array.isArray(obj.matches)) throw new Error('shape'); const keepUrl = d().syncUrl; L.S.data = L.normalize(obj); if (keepUrl) L.S.data.syncUrl = keepUrl; L.save('Imported ' + f.name); render(); } catch (err) { L.toast('That file is not a league backup'); } }; r.readAsText(f); };
+    $('#pub-reset').onclick = () => { if (confirm('Discard the copy on this device and reload the shared league data?')) { try { localStorage.removeItem(L.STORE_KEY); } catch (e) { } location.reload(); } };
   }
   function dataFileText() {
     const x = L.deep(d()); x.updatedAt = new Date().toISOString();
     return '/* League data. Edit on the website (Manage tab) and download, or edit by hand.\n   Dates are YYYY-MM-DD, times are 24-hour HH:MM. Lineups use player ids. */\nwindow.LEAGUE = ' + JSON.stringify(x, null, 2) + ';\n';
   }
-  function downloadData() { L.download('league-data.js', dataFileText(), 'text/javascript'); L.toast('Downloaded. Replace the old league-data.js on your host.'); }
+  function downloadData() { L.download('league-data.js', dataFileText(), 'text/javascript'); L.toast(d().syncUrl ? 'Backup downloaded' : 'Downloaded. Replace the old league-data.js on your host.'); }
   async function copyShare() { const url = await L.shareURL(); if (url.length > 8000) L.toast('Link is long; texting may split it. Prefer the download.'); try { await navigator.clipboard.writeText(url); L.toast('Share link copied'); } catch (e) { L.openModal('Share link', '<p style="color:var(--muted)">Copy this link and text it to the group.</p><textarea style="width:100%;height:120px;font-size:.75rem">' + esc(url) + '</textarea>'); } }
 
   window.LeagueManage = { render, scoreDialog, lineupDialog, generate };
