@@ -42,3 +42,6 @@ count.
 - `assets/`  racquet, ball and court artwork (local copies; the site prefers the
   hosted high-resolution versions when online)
 - `server/`  optional live-sync server, see server/README.md
+
+## Uploading to Netlify (or any host)
+The host needs `index.html` at the top level of what you upload. Drag the **folder itself** (or a zip made from the *contents* of the folder, not the folder wrapped in another folder) onto app.netlify.com/drop. A ready-made deploy zip is included in the kit for each site.

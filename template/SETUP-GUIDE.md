@@ -23,3 +23,6 @@ to push quick updates without re-uploading.
 
 Tip: players can enter scores themselves from the Schedule tab. If you set a PIN,
 share it with a captain so someone other than you can keep scores current.
+
+## Uploading to Netlify (or any host)
+The host needs `index.html` at the top level of what you upload. Drag the **folder itself** (or a zip made from the *contents* of the folder, not the folder wrapped in another folder) onto app.netlify.com/drop. A ready-made deploy zip is included in the kit for each site.
