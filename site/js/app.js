@@ -371,7 +371,6 @@
   }
 
   /* ---------- routing & shell ---------- */
-  function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem('league-theme', t); } catch (e) { } }
   function route() {
     let h = (location.hash || '#home').slice(1); if (h.startsWith('u=')) return;
     if (!['home', 'schedule', 'players', 'standings', 'manage'].includes(h)) h = 'home';
@@ -392,9 +391,7 @@
   }
 
   async function init() {
-    try { setTheme(localStorage.getItem('league-theme') || 'light'); } catch (e) { }
     loadData(); S.data = normalize(S.data);
-    $('#theme-btn').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
     $('#modal-close').onclick = closeModal; $('#modal').addEventListener('click', e => { if (e.target === $('#modal')) closeModal(); });
     wireMotion(); wireHero(); renderAll();
     await handleIncoming(); route(); window.addEventListener('hashchange', route);

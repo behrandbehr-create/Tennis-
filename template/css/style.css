@@ -10,11 +10,7 @@
   --radius:18px; --radius-s:12px; --shadow:0 10px 30px rgba(10,20,36,.10); --shadow-2:0 20px 50px rgba(10,20,36,.18);
   --display:'Barlow Condensed',Impact,'Arial Narrow',sans-serif; --body:'Manrope',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
   --bar-h:64px; --tab-h:66px;
-  color-scheme:light;
-}
-:root[data-theme="dark"]{
-  --paper:#0d1726; --card:#142238; --ink:#eef3ee; --muted:#a9b6ad; --line:#26364d; --soft:#1a2a42; --shadow:0 10px 30px rgba(0,0,0,.35); --shadow-2:0 20px 50px rgba(0,0,0,.5);
-  color-scheme:dark;
+  color-scheme:light only;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
@@ -42,8 +38,6 @@ h3{font-size:1.35rem;font-weight:700}
 .nav a{padding:8px 14px;border-radius:999px;text-decoration:none;font-weight:700;font-size:.92rem;opacity:.8;transition:.25s}
 .nav a:hover{opacity:1;background:rgba(255,255,255,.08)}
 .nav a.active{opacity:1;background:var(--accent);color:var(--accent-ink)}
-.theme-btn{border:1px solid rgba(255,255,255,.2);background:transparent;border-radius:999px;width:38px;height:38px;cursor:pointer;display:grid;place-items:center;transition:.25s}
-.theme-btn:hover{background:rgba(255,255,255,.1)}
 @media (max-width:760px){.nav{display:none}}
 @media (max-width:480px){.brand b{font-size:1rem}.brand small{font-size:.62rem}}
 
@@ -121,17 +115,12 @@ section.block{padding:40px 0}
 .pill.rescheduled{background:#e2efff;color:#0d4a8f}
 .pill.next{background:var(--accent);color:var(--accent-ink)}
 .pill.today{background:var(--coral);color:#fff}
-:root[data-theme="dark"] .pill.played{background:#173b27;color:#9fe3b8}
-:root[data-theme="dark"] .pill.unfinished{background:#3c2f10;color:#ffd685}
-:root[data-theme="dark"] .pill.canceled{background:#3f1b14;color:#ff9f8a}
-:root[data-theme="dark"] .pill.rescheduled{background:#12304f;color:#9fcbff}
 
 /* ---------- 3D spinning racquet avatar ---------- */
 .avatar{--size:64px;width:var(--size);height:var(--size);position:relative;perspective:600px;flex:none;display:grid;place-items:center}
-.avatar .ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,var(--accent),var(--court-2),var(--sky),var(--coral),var(--accent));-webkit-mask:radial-gradient(circle,transparent 62%,#000 64%,#000 72%,transparent 74%);mask:radial-gradient(circle,transparent 62%,#000 64%,#000 72%,transparent 74%);animation:ringRot 9s linear infinite;opacity:.9}
+.avatar .ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,var(--accent),var(--court-2),var(--accent-2),var(--court),var(--accent));-webkit-mask:radial-gradient(circle,transparent 62%,#000 64%,#000 72%,transparent 74%);mask:radial-gradient(circle,transparent 62%,#000 64%,#000 72%,transparent 74%);animation:ringRot 9s linear infinite;opacity:.9}
 .avatar .ring.two{inset:-7%;-webkit-mask:radial-gradient(circle,transparent 78%,#000 80%,#000 84%,transparent 86%);mask:radial-gradient(circle,transparent 78%,#000 80%,#000 84%,transparent 86%);animation-direction:reverse;animation-duration:14s;opacity:.55}
 .avatar .disc{position:absolute;inset:8%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--soft) 60%,var(--line));box-shadow:inset 0 -6px 14px rgba(0,0,0,.08)}
-:root[data-theme="dark"] .avatar .disc{background:radial-gradient(circle at 35% 30%,#2a3d5a,#142238 65%,#0d1726)}
 .avatar .spin{position:relative;width:74%;height:74%;transform-style:preserve-3d;animation:racquetSpin var(--spin-time,7s) cubic-bezier(.45,.05,.55,.95) infinite;animation-delay:var(--delay,0s)}
 .avatar .spin img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 8px rgba(0,0,0,.3));backface-visibility:visible}
 .avatar .orb{position:absolute;inset:0;animation:orbit var(--orbit-time,4.5s) linear infinite;animation-delay:var(--delay,0s);pointer-events:none}
@@ -150,7 +139,6 @@ section.block{padding:40px 0}
 .ball.lg{width:54px;height:54px}
 .ball.bounce{animation:bounce 1.6s cubic-bezier(.3,0,.7,1) infinite}
 .balls-chip{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(90deg,#fdfbe8,#f2f8c6);border:1px solid #e3ecad;border-radius:999px;padding:5px 12px 5px 6px;font-weight:700;font-size:.85rem;color:#4b5a00}
-:root[data-theme="dark"] .balls-chip{background:linear-gradient(90deg,#2a3210,#1f2a12);border-color:#3c4a1a;color:#e6f5a1}
 
 /* ---------- match cards ---------- */
 .match{display:grid;grid-template-columns:78px 1fr;gap:16px;align-items:start}
@@ -218,7 +206,6 @@ select.chip{appearance:none;-webkit-appearance:none;padding-right:28px;backgroun
 .table td:first-child{border-left:1px solid var(--line);border-radius:14px 0 0 14px}
 .table td:last-child{border-right:1px solid var(--line);border-radius:0 14px 14px 0}
 .table tr.rank-1 td{background:linear-gradient(90deg,#fffbe0,var(--card) 60%)}
-:root[data-theme="dark"] .table tr.rank-1 td{background:linear-gradient(90deg,#33380f,var(--card) 60%)}
 .rank{font-family:var(--display);font-weight:800;font-size:1.5rem;color:var(--muted);width:36px}
 .rank-1 .rank{color:#b8860b}
 .rank-2 .rank{color:#8a8a8a}
@@ -265,8 +252,6 @@ label.f.inline input[type=checkbox]{width:20px;height:20px}
 .set-row input{text-align:center;font-family:var(--display);font-size:1.4rem;font-weight:800;padding:6px}
 .warn{background:#fff3d6;color:#7a4e00;border-radius:10px;padding:10px 12px;font-size:.9rem;margin-top:8px}
 .ok{background:#e2f6e8;color:#14683a;border-radius:10px;padding:10px 12px;font-size:.9rem;margin-top:8px}
-:root[data-theme="dark"] .warn{background:#3c2f10;color:#ffd685}
-:root[data-theme="dark"] .ok{background:#173b27;color:#9fe3b8}
 .avatar-picker{display:flex;gap:6px;flex-wrap:wrap}
 .avatar-picker button{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--soft);padding:4px;cursor:pointer}
 .avatar-picker button.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(213,242,58,.4)}
