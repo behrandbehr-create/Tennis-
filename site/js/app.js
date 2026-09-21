@@ -368,7 +368,7 @@
   /* ---------- live sync: one shared copy for everyone ---------- */
   function editingNow() { const m = $('#modal'); const a = document.activeElement; return (m && m.open) || S.page === 'manage' || (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT')); }
   function adoptRemote(remote, version) {
-    S.data = normalize(remote); if (S.data.syncUrl === undefined && window.LEAGUE) S.data.syncUrl = window.LEAGUE.syncUrl; S.version = version; S.dirty = false; S.source = 'cloud'; S.pendingRemote = null; cache(); renderAll();
+    S.data = normalize(remote); if (window.LEAGUE && window.LEAGUE.syncUrl !== undefined) S.data.syncUrl = window.LEAGUE.syncUrl; S.version = version; S.dirty = false; S.source = 'cloud'; S.pendingRemote = null; cache(); renderAll();
   }
   async function pullSync(opts) {
     opts = opts || {}; if (!S.data.syncUrl) return false;
