@@ -103,7 +103,12 @@
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2600); }
   function download(name, content, type) { const url = URL.createObjectURL(new Blob([content], { type: type || 'text/plain' })); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); }
   function statusLabel(m) { return { scheduled: 'Scheduled', played: 'Final', unfinished: 'Unfinished', canceled: 'Canceled', rescheduled: 'Rescheduled' }[m.status] || m.status; }
-  function lineup(m) { return m.teamA.concat(m.teamB); }
+  function lineup(m) { return m.teamA.concat(m.teamB).filter(Boolean); }
+  const isFlex = () => !!S.data.flex;
+  const names = ids => ids.filter(Boolean).map(pshort).join(' & ') || 'Open';
+  const fullNames = ids => ids.filter(Boolean).map(pname).join(' & ') || 'Open slot';
+  function addDays(iso, n) { const { y, m, d } = dateParts(iso); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); }
+  function weekEnd(iso) { return addDays(iso, 6); }
 
   /* ---------- scoring ---------- */
   function setWinner(s) { if (s.a === s.b) return 0; return s.a > s.b ? 1 : 2; }
@@ -157,26 +162,27 @@
   function scoreHTML(m) {
     if (!(m.sets && m.sets.length)) return '';
     const res = matchResult(m);
-    return '<div class="score">' + m.sets.map(s => { const w = setWinner(s); return '<span class="set' + (w && w === res ? ' won' : '') + '">' + s.a + '<span style="opacity:.4">:</span>' + s.b + (s.tb ? '<span class="tb">TB</span>' : '') + '</span>'; }).join('') + (res ? '<span style="font-size:.9rem;font-family:var(--body);font-weight:700;color:var(--muted)">' + (res === 1 ? 'Team A' : 'Team B') + ' wins</span>' : '') + '</div>';
+    return '<div class="score">' + m.sets.map(s => { const w = setWinner(s); return '<span class="set' + (w && w === res ? ' won' : '') + '">' + s.a + '<span style="opacity:.4">:</span>' + s.b + (s.tb ? '<span class="tb">TB</span>' : '') + '</span>'; }).join('') + (res ? '<span style="font-size:.9rem;font-family:var(--body);font-weight:700;color:var(--muted)">' + names(res === 1 ? m.teamA : m.teamB) + ' win' + (lineup(m).length <= 2 ? 's' : '') + '</span>' : '') + '</div>';
   }
   function matchCard(m, opts) {
-    opts = opts || {}; const today = todayISO(); const isToday = m.date === today;
+    opts = opts || {}; const today = todayISO(); const isToday = m.date === today; const inWeek = isFlex() && m.date <= today && today <= weekEnd(m.date);
     const status = m.status; const needs = matchEnded(m) && status !== 'played' && status !== 'canceled';
-    const pill = needs ? '<span class="pill needs">Needs a score</span>' : (isToday && status !== 'canceled' && status !== 'played' ? '<span class="pill today">Tonight</span>' : (opts.next ? '<span class="pill next">Up next</span>' : '<span class="pill ' + status + '">' + statusLabel(m) + '</span>'));
+    const pill = needs ? '<span class="pill needs">Needs a score</span>' : ((isFlex() ? inWeek : isToday) && status !== 'canceled' && status !== 'played' ? '<span class="pill today">' + (isFlex() ? 'This week' : 'Tonight') + '</span>' : (opts.next ? '<span class="pill next">Up next</span>' : '<span class="pill ' + status + '">' + statusLabel(m) + '</span>'));
     const nums = lineup(m).map(id => player(id)).filter(Boolean).map(p => p.phone).filter(Boolean);
-    const body = 'Hey all, reminder: ' + (S.data.name) + ' ' + fmtDate(m.date, { weekday: 'short', month: 'short', day: 'numeric' }) + ' at ' + time12(m.startTime || S.data.startTime) + '. ' + pname(m.teamA[0]) + ' & ' + pname(m.teamA[1]) + ' vs ' + pname(m.teamB[0]) + ' & ' + pname(m.teamB[1]) + '. Balls: ' + pname(m.balls) + '.';
+    const body = isFlex() ? 'Hi! We are matched up in the ' + S.data.name + ' the week of ' + fmtDate(m.date, { month: 'short', day: 'numeric' }) + '. What days and times work for you? Balls: ' + pname(m.balls) + '.' : 'Hey all, reminder: ' + (S.data.name) + ' ' + fmtDate(m.date, { weekday: 'short', month: 'short', day: 'numeric' }) + ' at ' + time12(m.startTime || S.data.startTime) + '. ' + fullNames(m.teamA) + ' vs ' + fullNames(m.teamB) + '. Balls: ' + pname(m.balls) + '.';
     return '<article class="card tilt match' + (opts.next ? ' next' : '') + '" data-match="' + m.id + '">' +
-      '<div class="date"><div class="mon">' + fmtDate(m.date, { month: 'short' }) + '</div><div class="day">' + dateParts(m.date).d + '</div><div class="dow">' + dow(m.date) + '</div><div class="time">' + time12(m.startTime || S.data.startTime) + '</div></div>' +
+      '<div class="date"><div class="mon">' + fmtDate(m.date, { month: 'short' }) + '</div><div class="day">' + dateParts(m.date).d + '</div>' + (isFlex() ? '<div class="dow">week of</div><div class="time">any day</div>' : '<div class="dow">' + dow(m.date) + '</div><div class="time">' + time12(m.startTime || S.data.startTime) + '</div>') + '</div>' +
       '<div><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">' + pill + (m.originalDate && m.originalDate !== m.date ? '<span class="pill rescheduled">moved from ' + fmtDate(m.originalDate, { month: 'short', day: 'numeric' }) + '</span>' : '') + '</div>' +
       '<div class="teams"><div class="team">' + m.teamA.map(id => playerLine(id, m)).join('') + '</div><div class="vs">vs</div><div class="team">' + m.teamB.map(id => playerLine(id, m)).join('') + '</div></div>' +
       scoreHTML(m) +
       '<div class="match-meta"><span class="balls-chip">' + ballHTML() + ' Balls: ' + esc(pshort(m.balls)) + '</span>' + (m.note ? '<span>' + esc(m.note) + '</span>' : '') + '</div>' +
-      (opts.compact ? '' : '<div class="match-actions"><button class="btn court small" data-act="score" data-id="' + m.id + '">' + (m.sets && m.sets.length ? 'Edit score' : 'Enter score') + '</button><button class="btn soft small" data-act="lineup" data-id="' + m.id + '">Change lineup</button>' + (nums.length ? '<a class="btn soft small" href="' + smsLink(nums, body) + '">Text the four</a>' : '') + '<button class="btn soft small" data-act="ics" data-id="' + m.id + '">Calendar</button></div>') +
+      (opts.compact ? '' : '<div class="match-actions"><button class="btn court small" data-act="score" data-id="' + m.id + '">' + (m.sets && m.sets.length ? 'Edit score' : 'Enter score') + '</button><button class="btn soft small" data-act="lineup" data-id="' + m.id + '">' + (isFlex() ? 'Change players or week' : 'Change lineup') + '</button>' + (lineup(m).length <= 2 ? lineup(m).map(id => player(id)).filter(p => p && p.phone).map(p => '<a class="btn soft small" href="' + smsLink([p.phone], body) + '">Text ' + esc(p.name.split(' ')[0]) + '</a>').join('') : (nums.length ? '<a class="btn soft small" href="' + smsLink(nums, body) + '">Text the four</a>' : '')) + '<button class="btn soft small" data-act="ics" data-id="' + m.id + '">Calendar</button></div>') +
       '</div></article>';
   }
 
   function matchEnded(m) {
-    const t = todayISO(); if (m.date < t) return true; if (m.date > t) return false;
+    const t = todayISO(); if (isFlex()) return weekEnd(m.date) < t;
+    if (m.date < t) return true; if (m.date > t) return false;
     try { const off = tzOffsetMinutes(m.date, m.endTime || S.data.endTime, S.data.timeZone); const [h, mi] = (m.endTime || S.data.endTime).split(':').map(Number); const { y, mo, d } = (() => { const p = dateParts(m.date); return { y: p.y, mo: p.m, d: p.d }; })(); return Date.now() > Date.UTC(y, mo - 1, d, h, mi) - off * 60000; } catch (e) { return false; }
   }
   function pendingMatches() { return S.data.matches.filter(m => matchEnded(m) && m.status !== 'played' && m.status !== 'canceled'); }
@@ -197,7 +203,7 @@
   function icsStamp(iso, time) { const off = tzOffsetMinutes(iso, time, S.data.timeZone); const [h, mi] = time.split(':').map(Number); const { y, m, d } = dateParts(iso); const dt = new Date(Date.UTC(y, m - 1, d, h, mi) - off * 60000); return dt.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z'; }
   function icsFor(matches) {
     const escT = s => String(s).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\;');
-    const ev = matches.filter(m => m.status !== 'canceled').map(m => ['BEGIN:VEVENT', 'UID:league-' + m.id + '-' + m.date + '@' + (location.host || 'tennis-league'), 'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z', 'DTSTART:' + icsStamp(m.date, m.startTime || S.data.startTime), 'DTEND:' + icsStamp(m.date, m.endTime || S.data.endTime), 'SUMMARY:' + escT(S.data.name + ': ' + pshort(m.teamA[0]) + ' & ' + pshort(m.teamA[1]) + ' vs ' + pshort(m.teamB[0]) + ' & ' + pshort(m.teamB[1])), 'DESCRIPTION:' + escT('Balls: ' + pname(m.balls) + (m.note ? '. ' + m.note : '') + '. Check the league site for changes.'), S.data.venue ? 'LOCATION:' + escT(S.data.venue + (S.data.venueAddress ? ', ' + S.data.venueAddress : '')) : '', 'END:VEVENT'].filter(Boolean).join('\r\n'));
+    const ev = matches.filter(m => m.status !== 'canceled').map(m => ['BEGIN:VEVENT', 'UID:league-' + m.id + '-' + m.date + '@' + (location.host || 'tennis-league'), 'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z', isFlex() ? 'DTSTART;VALUE=DATE:' + m.date.replace(/-/g, '') : 'DTSTART:' + icsStamp(m.date, m.startTime || S.data.startTime), isFlex() ? 'DTEND;VALUE=DATE:' + addDays(m.date, 1).replace(/-/g, '') : 'DTEND:' + icsStamp(m.date, m.endTime || S.data.endTime), 'SUMMARY:' + escT(S.data.name + ': ' + names(m.teamA) + ' vs ' + names(m.teamB) + (isFlex() ? ' (this week)' : '')), 'DESCRIPTION:' + escT((isFlex() ? 'Play any day this week. ' : '') + 'Balls: ' + pname(m.balls) + (m.note ? '. ' + m.note : '') + '. Check the league site for changes.'), S.data.venue ? 'LOCATION:' + escT(S.data.venue + (S.data.venueAddress ? ', ' + S.data.venueAddress : '')) : '', 'END:VEVENT'].filter(Boolean).join('\r\n'));
     const out = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//League Site//EN', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:' + escT(S.data.name)].concat(ev, ['END:VCALENDAR']).join('\r\n');
     return out.split('\r\n').map(l => l.length > 72 ? l.match(/.{1,72}/g).join('\r\n ') : l).join('\r\n');
   }
@@ -207,18 +213,18 @@
   function vcard(p) { return ['BEGIN:VCARD', 'VERSION:3.0', 'N:' + p.name.split(' ').slice(1).join(' ') + ';' + p.name.split(' ')[0] + ';;;', 'FN:' + p.name, p.phone ? 'TEL;TYPE=CELL:' + telNum(p.phone) : '', p.email ? 'EMAIL:' + p.email : '', 'NOTE:' + S.data.name + (p.num ? ' #' + p.num : ''), 'END:VCARD'].filter(Boolean).join('\r\n'); }
 
   /* ---------- rendering: home ---------- */
-  function nextMatch() { const t = todayISO(); return S.data.matches.find(m => m.date >= t && m.status !== 'canceled' && m.status !== 'played'); }
+  function nextMatch() { const t = todayISO(); return S.data.matches.find(m => (isFlex() ? weekEnd(m.date) >= t : m.date >= t) && m.status !== 'canceled' && m.status !== 'played'); }
   function renderHome() {
     const d = S.data;
-    $('#hero-eyebrow').textContent = (d.season ? d.season + ' · ' : '') + (d.dayOfWeek ? d.dayOfWeek + 's ' : '') + time12(d.startTime) + ' to ' + time12(d.endTime);
+    $('#hero-eyebrow').textContent = isFlex() ? (d.season ? d.season + ' · ' : '') + 'one match a week, any day you both agree on' : (d.season ? d.season + ' · ' : '') + (d.dayOfWeek ? d.dayOfWeek + 's ' : '') + time12(d.startTime) + ' to ' + time12(d.endTime);
     $('#hero-title').innerHTML = esc(d.name) + (d.venue ? ' <span>at ' + esc(d.venue) + '</span>' : '');
     $('#hero-lead').textContent = d.tagline + '. Lineups, ball duty, scores and contacts all in one place.';
     const nm = nextMatch(); const spot = $('#spotlight'); const cnt = $('#next-count');
     if (nm) {
-      const isToday = nm.date === todayISO();
-      $('#next-title').textContent = isToday ? 'Tonight' : 'Next match';
-      spot.innerHTML = matchCard(nm, { next: true }) + '<div class="card reveal in" style="display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:center;text-align:center"><span class="eyebrow">Who brings the balls</span>' + ballHTML('lg bounce') + avatarHTML(player(nm.balls), 'large', 3) + '<h3>' + esc(pname(nm.balls)) + '</h3><p style="margin:0;color:var(--muted);font-size:.9rem">Bring a new can. Everyone else, bring your A game.</p>' + (player(nm.balls) && player(nm.balls).phone ? '<a class="btn soft small" href="' + smsLink([player(nm.balls).phone], 'Hey ' + pshort(nm.balls) + ', you have balls this week. See you ' + fmtDate(nm.date, { weekday: 'long' }) + '!') + '">Text a reminder</a>' : '') + '</div>';
-      cnt.innerHTML = ''; tickCountdown(nm);
+      const isToday = isFlex() ? (nm.date <= todayISO() && todayISO() <= weekEnd(nm.date)) : nm.date === todayISO();
+      $('#next-title').textContent = isToday ? (isFlex() ? 'This week' : 'Tonight') : 'Next match';
+      spot.innerHTML = matchCard(nm, { next: true }) + '<div class="card reveal in" style="display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:center;text-align:center"><span class="eyebrow">Who brings the balls</span>' + ballHTML('lg bounce') + avatarHTML(player(nm.balls), 'large', 3) + '<h3>' + esc(pname(nm.balls)) + '</h3><p style="margin:0;color:var(--muted);font-size:.9rem">' + (isFlex() ? 'Bring a new can to your match this week.' : 'Bring a new can. Everyone else, bring your A game.') + '</p>' + (player(nm.balls) && player(nm.balls).phone ? '<a class="btn soft small" href="' + smsLink([player(nm.balls).phone], 'Hey ' + pshort(nm.balls) + ', you have balls this week. See you ' + fmtDate(nm.date, { weekday: 'long' }) + '!') + '">Text a reminder</a>' : '') + '</div>';
+      cnt.innerHTML = ''; if (isFlex()) cnt.innerHTML = '<div><b>' + dateParts(nm.date).d + '</b><span>' + fmtDate(nm.date, { month: 'short' }) + ' week</span></div>'; else tickCountdown(nm);
     } else {
       $('#next-title').textContent = 'Season complete'; cnt.innerHTML = '';
       spot.innerHTML = '<div class="card"><h3>No upcoming matches</h3><p style="color:var(--muted)">Add matches on the Manage tab or check the standings for the final table.</p></div>';
@@ -253,7 +259,7 @@
 
   /* ---------- rendering: schedule ---------- */
   function renderSchedule() {
-    const d = S.data; $('#sched-eyebrow').textContent = (d.season || '') + ' · ' + d.matches.length + ' match nights';
+    const d = S.data; $('#sched-eyebrow').textContent = (d.season || '') + ' · ' + d.matches.length + (isFlex() ? ' match weeks' : ' match nights');
     const months = Array.from(new Set(d.matches.map(m => m.date.slice(0, 7))));
     const f = $('#sched-filters');
     const pendCount = pendingMatches().length;
@@ -279,7 +285,7 @@
         const [y, mth] = mo.split('-').map(Number); const first = new Date(Date.UTC(y, mth - 1, 1)); const days = new Date(Date.UTC(y, mth, 0)).getUTCDate(); const start = first.getUTCDay();
         let cells = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(x => '<div class="dow">' + x + '</div>').join('');
         for (let i = 0; i < start; i++) cells += '<div class="d blank"></div>';
-        for (let dd = 1; dd <= days; dd++) { const iso = mo + '-' + String(dd).padStart(2, '0'); const ms = byDate[iso]; const m = ms && ms[0]; cells += '<div class="d' + (m ? ' has ' + m.status : '') + (iso === t ? ' today' : '') + '"' + (m ? ' data-open="' + m.id + '" title="' + esc(pname(m.teamA[0]) + ' & ' + pname(m.teamA[1]) + ' vs ' + pname(m.teamB[0]) + ' & ' + pname(m.teamB[1])) + '"' : '') + '>' + dd + (m && nm && nm.id === m.id ? '<i></i>' : '') + '</div>'; }
+        for (let dd = 1; dd <= days; dd++) { const iso = mo + '-' + String(dd).padStart(2, '0'); const ms = byDate[iso]; const m = ms && ms[0]; cells += '<div class="d' + (m ? ' has ' + m.status : '') + (iso === t ? ' today' : '') + '"' + (m ? ' data-open="' + m.id + '" title="' + esc(fullNames(m.teamA) + ' vs ' + fullNames(m.teamB)) + '"' : '') + '>' + dd + (m && nm && nm.id === m.id ? '<i></i>' : '') + '</div>'; }
         return '<div class="cal-month card"><h3>' + fmtDate(mo + '-01', { month: 'long', year: 'numeric' }) + '</h3><div class="cal">' + cells + '</div></div>';
       }).join('') + '<div id="cal-detail"></div>';
       $$('[data-open]', cal).forEach(el => el.onclick = () => { const m = d.matches.find(x => x.id === Number(el.dataset.open)); $('#cal-detail').innerHTML = matchCard(m, { next: nm && nm.id === m.id }); wireMatchActions($('#cal-detail')); $('#cal-detail').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
@@ -306,12 +312,12 @@
     const phones = activePlayers().map(p => p.phone).filter(Boolean); const emails = activePlayers().map(p => p.email).filter(Boolean);
     $('#group-actions').innerHTML = (phones.length ? '<a class="btn court" href="' + smsLink(phones, '') + '">Text everyone</a>' : '') + (emails.length ? '<a class="btn soft" href="' + mailLink(emails, d.name) + '">Email everyone</a>' : '') + '<button class="btn soft" id="copy-roster">Copy roster</button>';
     $('#copy-roster').onclick = () => { const txt = activePlayers().map(p => p.name + (p.num ? ' #' + p.num : '') + ' · ' + (p.phone || '') + ' · ' + (p.email || '')).join('\n'); navigator.clipboard && navigator.clipboard.writeText(txt).then(() => toast('Roster copied'), () => toast('Copy failed')); };
-    const card = (p, i) => { const r = byId[p.id] || { played: 0, w: 0, l: 0, balls: 0, scheduled: 0 }; const weeks = d.matches.filter(m => m.status !== 'canceled' && lineup(m).includes(p.id) && m.date >= todayISO()).map(m => fmtDate(m.date, { month: 'short', day: 'numeric' }));
+    const card = (p, i) => { const r = byId[p.id] || { played: 0, w: 0, l: 0, balls: 0, scheduled: 0 }; const weeks = d.matches.filter(m => m.status !== 'canceled' && lineup(m).includes(p.id) && !matchEnded(m)).map(m => (isFlex() ? 'wk of ' : '') + fmtDate(m.date, { month: 'short', day: 'numeric' }));
       return '<article class="card tilt player-card reveal" data-player="' + p.id + '">' + (p.role === 'sub' ? '<span class="pill sub-badge">Sub</span>' : '') + avatarHTML(p, 'large', i) + '<div><h3>' + esc(p.name) + '</h3><div class="num-badge">' + (p.num ? '#' + esc(p.num) + ' · ' : '') + (p.role === 'sub' ? 'Substitute' : 'Player') + '</div></div>' +
         '<div class="contact">' + (p.phone ? '<a class="btn primary" href="' + smsLink([p.phone]) + '">Text</a><a class="btn soft" href="tel:' + telNum(p.phone) + '">Call</a>' : '') + (p.email ? '<a class="btn soft" href="mailto:' + esc(p.email) + '">Email</a>' : '') + '<button class="btn soft" data-vcard="' + p.id + '">Save contact</button></div>' +
         '<div style="font-size:.85rem;color:var(--muted)">' + (p.phone ? '<a href="tel:' + telNum(p.phone) + '" style="text-decoration:none">' + esc(p.phone) + '</a>' : '') + (p.phone && p.email ? ' · ' : '') + (p.email ? '<a href="mailto:' + esc(p.email) + '" style="text-decoration:none">' + esc(p.email) + '</a>' : '') + '</div>' +
-        '<div class="stat-row"><div><b>' + r.w + '-' + r.l + '</b>record</div><div><b>' + r.scheduled + '</b>nights</div><div><b>' + r.balls + '</b>ball duty</div></div>' +
-        (weeks.length ? '<div class="weeks">Upcoming: ' + weeks.slice(0, 5).join(', ') + (weeks.length > 5 ? ' +' + (weeks.length - 5) : '') + '</div>' : '<div class="weeks">No upcoming nights scheduled</div>') + '</article>'; };
+        '<div class="stat-row"><div><b>' + r.w + '-' + r.l + '</b>record</div><div><b>' + r.scheduled + '</b>' + (isFlex() ? 'matches' : 'nights') + '</div><div><b>' + r.balls + '</b>ball duty</div></div>' +
+        (weeks.length ? '<div class="weeks">Upcoming' + (isFlex() ? ' weeks' : '') + ': ' + weeks.slice(0, 5).join(', ') + (weeks.length > 5 ? ' +' + (weeks.length - 5) : '') + '</div>' : '<div class="weeks">No upcoming ' + (isFlex() ? 'matches' : 'nights') + ' scheduled</div>') + '</article>'; };
     $('#players-grid').innerHTML = ps.map(card).join('');
     $('#subs-block').innerHTML = subs.length ? '<div class="section-head" style="margin-top:30px"><div><span class="eyebrow">Bench</span><h2>Sub list</h2><p>Need a night off? Text a sub, then update the lineup on the schedule.</p></div></div><div class="grid cols-3">' + subs.map(card).join('') + '</div>' : '';
     $$('[data-vcard]').forEach(b => b.onclick = () => { const p = player(Number(b.dataset.vcard)); download(p.name.replace(/\s+/g, '-') + '.vcf', vcard(p), 'text/vcard'); });
@@ -322,7 +328,7 @@
   function renderStandings() {
     const st = standings(); const played = S.data.matches.filter(m => m.status === 'played').length; const total = S.data.matches.filter(m => m.status !== 'canceled').length;
     const games = S.data.matches.filter(m => m.status === 'played').reduce((n, m) => n + m.sets.filter(s => !s.tb).reduce((g, s) => g + s.a + s.b, 0), 0);
-    $('#standings-note').textContent = played ? played + ' of ' + total + ' match nights played.' : 'No scores yet. The table fills in as matches are played.';
+    $('#standings-note').textContent = played ? played + ' of ' + total + (isFlex() ? ' matches played.' : ' match nights played.') : 'No scores yet. The table fills in as matches are played.';
     $('#standings-tiles').innerHTML = [['Played', played], ['Remaining', total - played], ['Games so far', games], ['Players', activePlayers().length]].map(t => '<div class="tile reveal"><b data-count="' + t[1] + '">0</b><span>' + t[0] + '</span></div>').join('');
     const maxW = Math.max(1, ...st.map(r => r.w));
     $('#standings-table').innerHTML = '<thead><tr><th></th><th>Player</th><th>W</th><th>L</th><th class="hide-m">Win %</th><th class="hide-m">Sets</th><th class="hide-m">Games</th><th>Form</th></tr></thead><tbody>' +
@@ -450,7 +456,7 @@
     const hero = $('#hero'); const bar = $('.topbar'); window.addEventListener('scroll', () => { const y = window.scrollY; bar.classList.toggle('scrolled', y > 8); if (y < 900) { const m = $('.hero-media', hero); if (m) m.style.transform = 'translateY(' + y * .28 + 'px)'; } }, { passive: true });
   }
   function wireHero() {
-    artImg($('#hero-img'), ART.hero, '');
+    artImg($('#hero-img'), ART[S.data.heroArt] || ART.hero, '');
     artImg($('#hero-logo'), ART.logoWhite, 'Country Club of Colorado'); artImg($('#foot-logo'), ART.crest, 'Country Club of Colorado');
     const v = $('#hero-video'); const hero = $('#hero');
     const saveData = navigator.connection && navigator.connection.saveData; const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -500,6 +506,6 @@
     startSyncLoop();
   }
 
-  window.League = { S, save, pendingMatches, matchEnded, pullSync, pushSync, freshen, syncBadge, normalize, player, pname, pshort, activePlayers, standings, matchResult, validateSets, avatarHTML, ballHTML, artSrc, racquetArt, ART, esc, $, $$, todayISO, fmtDate, dow, time12, openModal, closeModal, toast, download, shareURL, encodeShare, telNum, smsLink, mailLink, renderAll, deep, STORE_KEY, lineup, statusLabel, matchCard, wireMatchActions };
+  window.League = { S, save, pendingMatches, matchEnded, isFlex, names, fullNames, pullSync, pushSync, freshen, syncBadge, normalize, player, pname, pshort, activePlayers, standings, matchResult, validateSets, avatarHTML, ballHTML, artSrc, racquetArt, ART, esc, $, $$, todayISO, fmtDate, dow, time12, openModal, closeModal, toast, download, shareURL, encodeShare, telNum, smsLink, mailLink, renderAll, deep, STORE_KEY, lineup, statusLabel, matchCard, wireMatchActions };
   document.addEventListener('DOMContentLoaded', init);
 })();

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tennis League</title>
+<meta name="description" content="League schedule, lineups, scores, standings and player contacts.">
+<meta name="theme-color" content="#344f2c">
+<link rel="icon" href="assets/club-logo.png" type="image/png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="banner" class="banner hidden"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#home">
+      <img class="crest" id="crest" alt="Country Club of Colorado">
+      <span><b id="brand-name">Tennis League</b><small id="brand-season"></small></span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="#home" data-page="home">Home</a>
+      <a href="#schedule" data-page="schedule">Schedule</a>
+      <a href="#players" data-page="players">Players</a>
+      <a href="#standings" data-page="standings">Standings</a>
+      <a href="#manage" data-page="manage">Manage</a>
+      <a href="#help" data-help class="help-link" title="How to use this site">? Help</a>
+    </nav>
+    <span class="bar-right"><span class="sync-badge hidden" id="sync-badge" title="Changes are shared with everyone automatically"></span><button class="help-btn" data-help aria-label="How to use this site" title="How to use this site">?</button></span>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- ================= HOME ================= -->
+  <section class="page" id="page-home">
+    <div class="hero" id="hero">
+      <div class="hero-media">
+        <img id="hero-img" alt="" fetchpriority="high">
+        <video id="hero-video" muted loop playsinline autoplay preload="metadata"></video>
+      </div>
+      <div class="hero-haze"></div><div class="hero-rays"></div><div class="hero-grain"></div>
+      <div class="hero-inner"><div class="wrap">
+        <img class="hero-logo" id="hero-logo" alt="">
+        <span class="eyebrow"><span class="ball"><img alt="" data-art="ball"></span> <span id="hero-eyebrow"></span></span>
+        <h1 id="hero-title"></h1>
+        <p class="lead" id="hero-lead"></p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#schedule">See the schedule</a>
+          <a class="btn ghost" href="#players">Player contacts</a>
+          <a class="btn ghost" id="hero-ics" href="#" download>Add season to calendar</a>
+        </div>
+      </div></div>
+    </div>
+    <div class="wrap">
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow">Up next</span><h2 id="next-title">Next match</h2></div><div id="next-count" class="countdown"></div></div>
+        <div class="spotlight" id="spotlight"></div>
+      </section>
+      <section class="block" id="home-pending-block">
+        <div class="section-head"><div><span class="eyebrow">Missing results</span><h2>Waiting for a score</h2><p>These nights have been played but nobody has entered the result yet. Anyone can add it.</p></div></div>
+        <div id="home-pending"></div>
+      </section>
+      <section class="block reveal" id="home-recent-block">
+        <div class="section-head"><div><span class="eyebrow">Latest results</span><h2>Recent matches</h2></div><a class="btn soft small" href="#schedule">All matches</a></div>
+        <div id="home-recent"></div>
+      </section>
+      <section class="block reveal" id="home-announce-block">
+        <div class="section-head"><div><span class="eyebrow">League notes</span><h2>Announcements</h2></div></div>
+        <div id="home-announce"></div>
+      </section>
+      <section class="block reveal">
+        <div class="section-head"><div><span class="eyebrow">Leaderboard</span><h2>Top of the table</h2></div><a class="btn soft small" href="#standings">Full standings</a></div>
+        <div id="home-standings"></div>
+      </section>
+      <section class="block reveal">
+        <div class="section-head"><div><span class="eyebrow">How it works</span><h2>League rules</h2></div></div>
+        <div class="card" id="home-rules"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ================= SCHEDULE ================= -->
+  <section class="page" id="page-schedule">
+    <div class="wrap">
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow" id="sched-eyebrow"></span><h2>Schedule &amp; scores</h2><p>Tap a match to enter a score, swap in a sub, or move the date.</p></div>
+          <div class="group-actions" style="margin:0"><a class="btn soft small" id="sched-ics" href="#" download>Download calendar (.ics)</a><button class="btn soft small" id="sched-print">Print</button></div></div>
+        <div class="filters" id="sched-filters"></div>
+        <div id="sched-list"></div>
+        <div id="sched-cal" class="hidden"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ================= PLAYERS ================= -->
+  <section class="page" id="page-players">
+    <div class="wrap">
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow">Roster</span><h2>Players &amp; contacts</h2><p>Tap to call, text or email. Everyone in one place so nobody has to hunt for a number.</p></div></div>
+        <div class="group-actions" id="group-actions"></div>
+        <div class="grid cols-3" id="players-grid"></div>
+        <div id="subs-block"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ================= STANDINGS ================= -->
+  <section class="page" id="page-standings">
+    <div class="wrap">
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow">Season table</span><h2>Standings</h2><p id="standings-note"></p></div></div>
+        <div class="tiles" id="standings-tiles" style="margin-bottom:18px"></div>
+        <div style="overflow-x:auto"><table class="table" id="standings-table"></table></div>
+        <p style="color:var(--muted);font-size:.85rem">Ranked by match wins, then win percentage, then set difference, then game difference. Only matches marked <b>Played</b> count. Match tiebreaks count as a set but not toward games.</p>
+      </section>
+    </div>
+  </section>
+
+  <!-- ================= MANAGE ================= -->
+  <section class="page" id="page-manage">
+    <div class="wrap">
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow">Captain tools</span><h2>Manage the league</h2><p>Add or drop players, fix the schedule, enter scores, post notes. Every change is saved and shared with the league automatically. <a href="#help" data-help>Need a walkthrough?</a></p></div></div>
+        <div id="manage-root"></div>
+      </section>
+    </div>
+  </section>
+
+</main>
+
+<footer><div class="wrap"><img class="foot-logo" id="foot-logo" alt=""><span id="foot-text"></span><br><small id="foot-updated"></small></div></footer>
+
+
+<dialog class="modal help" id="help"><div class="inner">
+  <div class="head"><h3>How to use this site</h3><button id="help-close" aria-label="Close">×</button></div>
+  <p class="help-intro">Tap a topic. Everything you change here shows up for everyone in the league within a minute, no app or login needed.</p>
+  <p class="eyebrow" style="margin:14px 0 6px">For players</p>
+  <details><summary>Find your nights and who you play with</summary><div>Open <b>Schedule</b>. Use the <b>All players</b> menu to show only your nights. The tennis ball next to a name means that person brings a new can of balls. Tap <b>Calendar</b> on a match to add it to your phone, or use <b>Download calendar</b> at the top for the whole season.</div></details>
+  <details><summary>Enter a score after your match</summary><div>On the home page, played nights without a result appear under <b>Waiting for a score</b>. Tap <b>Enter score</b>, tap <b>Played</b>, type the games for each set (left number is Team A, listed first), and tap <b>Save</b>. You can also do this from the <b>Schedule</b> tab on any match. Ran out of time mid-set? Choose <b>Unfinished</b> instead and the match will not count in the standings.</div></details>
+  <details><summary>Can't make your night? Swap in a sub</summary><div>Text someone from the <b>Sub list</b> on the Players page. Then on the match, tap <b>Change lineup</b> and pick the sub in your spot. Everyone sees the new lineup right away.</div></details>
+  <details><summary>Text, call or email anyone</summary><div>Open <b>Players</b>. Every card has <b>Text</b>, <b>Call</b> and <b>Email</b> buttons. <b>Text everyone</b> starts a group text. On a match, <b>Text the four</b> messages just that night's players with the date and lineup already typed.</div></details>
+  <details><summary>Put this on your home screen</summary><div>iPhone: tap the share button in Safari, then <b>Add to Home Screen</b>. Android: open the browser menu and choose <b>Add to Home screen</b>. It then opens like an app.</div></details>
+  <details><summary>How standings work</summary><div>Only matches marked <b>Played</b> count. Players are ranked by wins, then win percentage, then set difference, then game difference. Match tiebreaks count as a set, not as games.</div></details>
+  <p class="eyebrow" style="margin:18px 0 6px">For the captain or pro (Manage tab)</p>
+  <details><summary>Add, remove or replace a player</summary><div>Manage → <b>Players</b>. Edit names, numbers, phones and emails right in the list. <b>Add to roster</b> adds a player or sub. If someone drops out, tap <b>Replace everywhere</b> to put another player or sub into all of their remaining nights in one step.</div></details>
+  <details><summary>Change a date, lineup or ball duty</summary><div>Manage → <b>Schedule &amp; scores</b> → <b>Edit</b> on the night. You can move the date and time, swap any of the four players, choose who brings balls, cancel the night or add a note like a court number.</div></details>
+  <details><summary>Post an announcement</summary><div>Manage → <b>League info</b> → <b>Announcements</b>. Type a message and tap <b>Post</b>. It appears on the home page for everyone.</div></details>
+  <details><summary>Saving: how it works</summary><div>Every change on the Manage tab saves the moment you make it and is shared with the whole league automatically. The green <b>Live</b> badge at the top confirms the connection. If you are offline, the change waits on your phone and is sent as soon as you are back online. The <b>Save changes</b> button at the bottom of Manage simply re-sends everything, in case you want to be sure.</div></details>
+  <details><summary>Backups and starting a new season</summary><div>Manage → <b>Backup &amp; tools</b>. <b>Download backup</b> saves a copy of every player, match and score to a file. <b>Import</b> restores from one. <b>Season generator</b> builds a balanced rotation for a new season from any set of players.</div></details>
+</div></dialog>
+<dialog class="modal" id="modal"><div class="inner"><div class="head"><h3 id="modal-title"></h3><button id="modal-close" aria-label="Close">×</button></div><div id="modal-body"></div></div></dialog>
+<div class="toast" id="toast"></div>
+
+<script src="league-data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/manage.js"></script>
+</body>
+</html>

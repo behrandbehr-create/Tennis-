@@ -27,10 +27,12 @@ window.LEAGUE = {
   "syncUrl": "https://wednesday-night-tennis.higgsfield.app/api/state?league=ccc-mens-wednesday",
   "organizer": { "name": "Roger Anderson", "phone": "214-728-8332", "email": "roger.anderson@ccofcolorado.com" },
   "rules": [
-    "Matches are doubles, 7:00 to 8:30 pm. Play as many sets as time allows.",
-    "The player marked with the tennis ball brings a new can of balls.",
-    "If you cannot make your week, find a sub from the Sub List and update the lineup here.",
-    "Enter the score right after the match so standings stay current."
+      "Matches are doubles, Wednesdays 7:00 to 8:30 pm on the outdoor courts.",
+      "Best 2 out of 3 sets with no-ad scoring. A 10-point tiebreaker is played in place of a third set.",
+      "The player marked with the tennis ball brings a new can of balls.",
+      "If you cannot make your week, it is up to you to find a substitute from the league or the sub list, then update the lineup here. No-shows are charged the court fees for everyone on the court that night.",
+      "Court fees are $10 per scheduled doubles match, plus a one-time $13 administration fee for the season.",
+      "Enter the score right after the match so standings stay current."
   ],
   "announcements": [
     { "date": "2026-09-14", "text": "Welcome to the fall season. Check the schedule for your weeks and who brings balls." }
