@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tennis League</title>
+<meta name="description" content="League schedule, lineups, scores, standings and player contacts.">
+<meta name="theme-color" content="#0a1424">
+<link rel="icon" href="assets/crest-fallback.webp" type="image/webp">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="banner" class="banner hidden"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#home">
+      <img class="crest" id="crest" alt="" width="42" height="42">
+      <span><b id="brand-name">Tennis League</b><small id="brand-season"></small></span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="#home" data-page="home">Home</a>
+      <a href="#schedule" data-page="schedule">Schedule</a>
+      <a href="#players" data-page="players">Players</a>
+      <a href="#standings" data-page="standings">Standings</a>
+      <a href="#manage" data-page="manage">Manage</a>
+    </nav>
+    <button class="theme-btn" id="theme-btn" title="Light / dark" aria-label="Toggle light and dark mode">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- ================= HOME ================= -->
+  <section class="page" id="page-home">
+    <div class="hero" id="hero">
+      <div class="hero-media">
+        <img id="hero-img" alt="" fetchpriority="high">
+        <video id="hero-video" muted loop playsinline autoplay preload="metadata"></video>
+      </div>
+      <div class="hero-haze"></div><div class="hero-rays"></div><div class="hero-grain"></div>
+      <div class="float-ball b1"><img alt="" data-art="ball"></div>
+      <div class="float-ball b2"><img alt="" data-art="ball"></div>
+      <div class="float-ball b3"><img alt="" data-art="ball"></div>
+      <div class="hero-inner"><div class="wrap">
+        <span class="eyebrow"><span class="ball"><img alt="" data-art="ball"></span> <span id="hero-eyebrow"></span></span>
+        <h1 id="hero-title"></h1>
+        <p class="lead" id="hero-lead"></p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#schedule">See the schedule</a>
+          <a class="btn ghost" href="#players">Player contacts</a>
+          <a class="btn ghost" id="hero-ics" href="#" download>Add season to calendar</a>
+        </div>
+      </div></div>
+    </div>
+    <div class="wrap">
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow">Up next</span><h2 id="next-title">Next match</h2></div><div id="next-count" class="countdown"></div></div>
+        <div class="spotlight" id="spotlight"></div>
+      </section>
+      <section class="block reveal" id="home-announce-block">
+        <div class="section-head"><div><span class="eyebrow">League notes</span><h2>Announcements</h2></div></div>
+        <div id="home-announce"></div>
+      </section>
+      <section class="block reveal">
+        <div class="section-head"><div><span class="eyebrow">Leaderboard</span><h2>Top of the table</h2></div><a class="btn soft small" href="#standings">Full standings</a></div>
+        <div id="home-standings"></div>
+      </section>
+      <section class="block reveal">
+        <div class="section-head"><div><span class="eyebrow">How it works</span><h2>League rules</h2></div></div>
+        <div class="card" id="home-rules"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ================= SCHEDULE ================= -->
+  <section class="page" id="page-schedule">
+    <div class="wrap">
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow" id="sched-eyebrow"></span><h2>Schedule &amp; scores</h2><p>Tap a match to enter a score, swap in a sub, or move the date.</p></div>
+          <div class="group-actions" style="margin:0"><a class="btn soft small" id="sched-ics" href="#" download>Download calendar (.ics)</a><button class="btn soft small" id="sched-print">Print</button></div></div>
+        <div class="filters" id="sched-filters"></div>
+        <div id="sched-list"></div>
+        <div id="sched-cal" class="hidden"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ================= PLAYERS ================= -->
+  <section class="page" id="page-players">
+    <div class="wrap">
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow">Roster</span><h2>Players &amp; contacts</h2><p>Tap to call, text or email. Everyone in one place so nobody has to hunt for a number.</p></div></div>
+        <div class="group-actions" id="group-actions"></div>
+        <div class="grid cols-3" id="players-grid"></div>
+        <div id="subs-block"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ================= STANDINGS ================= -->
+  <section class="page" id="page-standings">
+    <div class="wrap">
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow">Season table</span><h2>Standings</h2><p id="standings-note"></p></div></div>
+        <div class="tiles" id="standings-tiles" style="margin-bottom:18px"></div>
+        <div style="overflow-x:auto"><table class="table" id="standings-table"></table></div>
+        <p style="color:var(--muted);font-size:.85rem">Ranked by match wins, then win percentage, then set difference, then game difference. Only matches marked <b>Played</b> count. Match tiebreaks count as a set but not toward games.</p>
+      </section>
+    </div>
+  </section>
+
+  <!-- ================= MANAGE ================= -->
+  <section class="page" id="page-manage">
+    <div class="wrap">
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow">Captain tools</span><h2>Manage the league</h2><p>Add or drop players, fix the schedule, enter scores. Changes save on this device instantly. Publish them with the buttons at the bottom.</p></div></div>
+        <div id="manage-root"></div>
+      </section>
+    </div>
+  </section>
+
+</main>
+
+<footer><div class="wrap"><span id="foot-text"></span><br><small id="foot-updated"></small></div></footer>
+
+<nav class="tabbar" id="tabbar">
+  <a href="#home" data-page="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>Home</a>
+  <a href="#schedule" data-page="schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Schedule</a>
+  <a href="#players" data-page="players"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-5-6.7"/></svg>Players</a>
+  <a href="#standings" data-page="standings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21V10M12 21V4M16 21v-7M4 21h16"/></svg>Standings</a>
+  <a href="#manage" data-page="manage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Manage</a>
+</nav>
+
+<dialog class="modal" id="modal"><div class="inner"><div class="head"><h3 id="modal-title"></h3><button id="modal-close" aria-label="Close">×</button></div><div id="modal-body"></div></div></dialog>
+<div class="toast" id="toast"></div>
+
+<script src="league-data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/manage.js"></script>
+</body>
+</html>
