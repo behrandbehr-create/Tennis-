@@ -38,7 +38,7 @@
 
   /* ---------- state ---------- */
   const STORE_KEY = 'league-data-v1';
-  const S = { data: null, source: 'file', page: 'home', view: 'list', filterPlayer: 0, filterMonth: '' };
+  const S = { data: null, source: 'file', page: 'home', view: 'list', filterPlayer: 0, filterMonth: '', filterPending: false };
 
   function deep(o) { return JSON.parse(JSON.stringify(o)); }
   function loadData() {
@@ -157,7 +157,8 @@
   }
   function matchCard(m, opts) {
     opts = opts || {}; const today = todayISO(); const isToday = m.date === today;
-    const status = m.status; const pill = isToday && status !== 'canceled' && status !== 'played' ? '<span class="pill today">Tonight</span>' : (opts.next ? '<span class="pill next">Up next</span>' : '<span class="pill ' + status + '">' + statusLabel(m) + '</span>');
+    const status = m.status; const needs = matchEnded(m) && status !== 'played' && status !== 'canceled';
+    const pill = needs ? '<span class="pill needs">Needs a score</span>' : (isToday && status !== 'canceled' && status !== 'played' ? '<span class="pill today">Tonight</span>' : (opts.next ? '<span class="pill next">Up next</span>' : '<span class="pill ' + status + '">' + statusLabel(m) + '</span>'));
     const nums = lineup(m).map(id => player(id)).filter(Boolean).map(p => p.phone).filter(Boolean);
     const body = 'Hey all, reminder: ' + (S.data.name) + ' ' + fmtDate(m.date, { weekday: 'short', month: 'short', day: 'numeric' }) + ' at ' + time12(m.startTime || S.data.startTime) + '. ' + pname(m.teamA[0]) + ' & ' + pname(m.teamA[1]) + ' vs ' + pname(m.teamB[0]) + ' & ' + pname(m.teamB[1]) + '. Balls: ' + pname(m.balls) + '.';
     return '<article class="card tilt match' + (opts.next ? ' next' : '') + '" data-match="' + m.id + '">' +
@@ -168,6 +169,21 @@
       '<div class="match-meta"><span class="balls-chip">' + ballHTML() + ' Balls: ' + esc(pshort(m.balls)) + '</span>' + (m.note ? '<span>' + esc(m.note) + '</span>' : '') + '</div>' +
       (opts.compact ? '' : '<div class="match-actions"><button class="btn court small" data-act="score" data-id="' + m.id + '">' + (m.sets && m.sets.length ? 'Edit score' : 'Enter score') + '</button><button class="btn soft small" data-act="lineup" data-id="' + m.id + '">Change lineup</button>' + (nums.length ? '<a class="btn soft small" href="' + smsLink(nums, body) + '">Text the four</a>' : '') + '<button class="btn soft small" data-act="ics" data-id="' + m.id + '">Calendar</button></div>') +
       '</div></article>';
+  }
+
+  function matchEnded(m) {
+    const t = todayISO(); if (m.date < t) return true; if (m.date > t) return false;
+    try { const off = tzOffsetMinutes(m.date, m.endTime || S.data.endTime, S.data.timeZone); const [h, mi] = (m.endTime || S.data.endTime).split(':').map(Number); const { y, mo, d } = (() => { const p = dateParts(m.date); return { y: p.y, mo: p.m, d: p.d }; })(); return Date.now() > Date.UTC(y, mo - 1, d, h, mi) - off * 60000; } catch (e) { return false; }
+  }
+  function pendingMatches() { return S.data.matches.filter(m => matchEnded(m) && m.status !== 'played' && m.status !== 'canceled'); }
+  function compactRow(m, opts) {
+    opts = opts || {}; const res = matchResult(m);
+    const side = (ids, won) => '<span class="crow-team' + (won ? ' won' : '') + '">' + ids.map(id => '<span class="player-line">' + avatarHTML(player(id), 'small', id) + '<span class="name">' + esc(pshort(id)) + '</span></span>').join('') + '</span>';
+    return '<div class="crow' + (opts.pending ? ' pending' : '') + '" data-match="' + m.id + '">' +
+      '<div class="crow-date"><b>' + fmtDate(m.date, { month: 'short', day: 'numeric' }) + '</b><small>' + dow(m.date) + '</small></div>' +
+      '<div class="crow-teams">' + side(m.teamA, res === 1) + '<span class="vs">vs</span>' + side(m.teamB, res === 2) + '</div>' +
+      '<div class="crow-right">' + (m.sets && m.sets.length ? scoreHTML(m) : '<span class="pill ' + m.status + '">' + statusLabel(m) + '</span>') +
+      '<button class="btn ' + (opts.pending ? 'primary' : 'soft') + ' small" data-act="score" data-id="' + m.id + '">' + (m.sets && m.sets.length ? 'Edit score' : 'Enter score') + '</button></div></div>';
   }
 
   /* ---------- calendar (.ics) ---------- */
@@ -203,6 +219,11 @@
       $('#next-title').textContent = 'Season complete'; cnt.innerHTML = '';
       spot.innerHTML = '<div class="card"><h3>No upcoming matches</h3><p style="color:var(--muted)">Add matches on the Manage tab or check the standings for the final table.</p></div>';
     }
+    const pend = pendingMatches(); $('#home-pending-block').classList.toggle('hidden', !pend.length);
+    $('#home-pending').innerHTML = pend.map(m => compactRow(m, { pending: true })).join('');
+    const recent = d.matches.filter(m => m.status === 'played').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
+    $('#home-recent-block').classList.toggle('hidden', !recent.length);
+    $('#home-recent').innerHTML = recent.map(m => compactRow(m)).join('');
     const ann = $('#home-announce'); const list = (d.announcements || []).slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     $('#home-announce-block').classList.toggle('hidden', !list.length);
     ann.innerHTML = list.map(a => '<div class="announce"><small>' + (a.date ? fmtDate(a.date, { month: 'short', day: 'numeric' }) : '') + '</small><div>' + esc(a.text) + '</div></div>').join('');
@@ -231,13 +252,16 @@
     const d = S.data; $('#sched-eyebrow').textContent = (d.season || '') + ' · ' + d.matches.length + ' match nights';
     const months = Array.from(new Set(d.matches.map(m => m.date.slice(0, 7))));
     const f = $('#sched-filters');
-    f.innerHTML = '<button class="chip' + (S.view === 'list' ? ' on' : '') + '" data-view="list">List</button><button class="chip' + (S.view === 'cal' ? ' on' : '') + '" data-view="cal">Calendar</button>' +
+    const pendCount = pendingMatches().length;
+    f.innerHTML = '<button class="chip' + (S.view === 'list' ? ' on' : '') + '" data-view="list">List</button><button class="chip' + (S.view === 'cal' ? ' on' : '') + '" data-view="cal">Calendar</button>' + (pendCount ? '<button class="chip' + (S.filterPending ? ' on' : '') + '" id="f-pending">Needs a score (' + pendCount + ')</button>' : '') +
       '<select class="chip" id="f-player"><option value="0">All players</option>' + activePlayers().map(p => '<option value="' + p.id + '"' + (S.filterPlayer === p.id ? ' selected' : '') + '>' + esc(p.name) + '</option>').join('') + '</select>' +
       '<select class="chip" id="f-month"><option value="">All months</option>' + months.map(mo => '<option value="' + mo + '"' + (S.filterMonth === mo ? ' selected' : '') + '>' + fmtDate(mo + '-01', { month: 'long', year: 'numeric' }) + '</option>').join('') + '</select>';
     $$('[data-view]', f).forEach(b => b.onclick = () => { S.view = b.dataset.view; renderSchedule(); });
+    const fp = $('#f-pending', f); if (fp) fp.onclick = () => { S.filterPending = !S.filterPending; renderSchedule(); };
     $('#f-player', f).onchange = e => { S.filterPlayer = Number(e.target.value); renderSchedule(); };
     $('#f-month', f).onchange = e => { S.filterMonth = e.target.value; renderSchedule(); };
-    const vis = d.matches.filter(m => (!S.filterPlayer || lineup(m).includes(S.filterPlayer)) && (!S.filterMonth || m.date.startsWith(S.filterMonth)));
+    const pendIds = new Set(pendingMatches().map(m => m.id)); if (S.filterPending && !pendIds.size) S.filterPending = false;
+    const vis = d.matches.filter(m => (!S.filterPending || pendIds.has(m.id)) && (!S.filterPlayer || lineup(m).includes(S.filterPlayer)) && (!S.filterMonth || m.date.startsWith(S.filterMonth)));
     const nm = nextMatch(); const list = $('#sched-list'); const cal = $('#sched-cal');
     list.classList.toggle('hidden', S.view !== 'list'); cal.classList.toggle('hidden', S.view !== 'cal');
     if (S.view === 'list') {
@@ -400,6 +424,6 @@
     pullSync();
   }
 
-  window.League = { S, save, normalize, player, pname, pshort, activePlayers, standings, matchResult, validateSets, avatarHTML, ballHTML, artSrc, racquetArt, ART, esc, $, $$, todayISO, fmtDate, dow, time12, openModal, closeModal, toast, download, shareURL, encodeShare, telNum, smsLink, mailLink, renderAll, deep, STORE_KEY, lineup, statusLabel, matchCard, wireMatchActions, pullSync };
+  window.League = { S, save, pendingMatches, matchEnded, normalize, player, pname, pshort, activePlayers, standings, matchResult, validateSets, avatarHTML, ballHTML, artSrc, racquetArt, ART, esc, $, $$, todayISO, fmtDate, dow, time12, openModal, closeModal, toast, download, shareURL, encodeShare, telNum, smsLink, mailLink, renderAll, deep, STORE_KEY, lineup, statusLabel, matchCard, wireMatchActions, pullSync };
   document.addEventListener('DOMContentLoaded', init);
 })();
