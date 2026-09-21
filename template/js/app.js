@@ -229,7 +229,7 @@
       $('#next-title').textContent = 'Season complete'; cnt.innerHTML = '';
       spot.innerHTML = '<div class="card"><h3>No upcoming matches</h3><p style="color:var(--muted)">Add matches on the Manage tab or check the standings for the final table.</p></div>';
     }
-    const pend = pendingMatches(); $('#home-pending-block').classList.toggle('hidden', !pend.length);
+    const pend = pendingMatches(); $('#home-pending-block').classList.toggle('hidden', !pend.length); const pendP = $('#home-pending-block .section-head p'); if (pendP) pendP.textContent = isFlex() ? 'These match weeks are over but nobody has entered the result yet. Either player can add it.' : 'These nights have been played but nobody has entered the result yet. Anyone can add it.';
     $('#home-pending').innerHTML = pend.map(m => compactRow(m, { pending: true })).join('');
     const recent = d.matches.filter(m => m.status === 'played').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
     $('#home-recent-block').classList.toggle('hidden', !recent.length);
