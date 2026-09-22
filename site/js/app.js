@@ -131,7 +131,7 @@
     for (const m of S.data.matches) {
       lineup(m).forEach(id => { if (rows[id] && m.status !== 'canceled') rows[id].scheduled++; });
       if (rows[m.balls] && m.status !== 'canceled') rows[m.balls].balls++;
-      if (m.status !== 'played') continue;
+      if (!hasResult(m)) continue;
       const res = matchResult(m); if (!res) continue;
       const side = id => (m.teamA.includes(id) ? 1 : (m.teamB.includes(id) ? 2 : 0));
       lineup(m).forEach(id => {
@@ -166,7 +166,7 @@
   }
   function matchCard(m, opts) {
     opts = opts || {}; const today = todayISO(); const isToday = m.date === today; const inWeek = isFlex() && m.date <= today && today <= weekEnd(m.date);
-    const status = m.status; const needs = matchEnded(m) && status !== 'played' && status !== 'canceled';
+    const status = m.status; const needs = matchEnded(m) && !hasResult(m) && status !== 'canceled';
     const pill = needs ? '<span class="pill needs">Needs a score</span>' : ((isFlex() ? inWeek : isToday) && status !== 'canceled' && status !== 'played' ? '<span class="pill today">' + (isFlex() ? 'This week' : 'Tonight') + '</span>' : (opts.next ? '<span class="pill next">Up next</span>' : '<span class="pill ' + status + '">' + statusLabel(m) + '</span>'));
     const nums = lineup(m).map(id => player(id)).filter(Boolean).map(p => p.phone).filter(Boolean);
     const body = isFlex() ? 'Hi! We are matched up in the ' + S.data.name + ' the week of ' + fmtDate(m.date, { month: 'short', day: 'numeric' }) + '. What days and times work for you? Balls: ' + pname(m.balls) + '.' : 'Hey all, reminder: ' + (S.data.name) + ' ' + fmtDate(m.date, { weekday: 'short', month: 'short', day: 'numeric' }) + ' at ' + time12(m.startTime || S.data.startTime) + '. ' + fullNames(m.teamA) + ' vs ' + fullNames(m.teamB) + '. Balls: ' + pname(m.balls) + '.';
@@ -185,7 +185,8 @@
     if (m.date < t) return true; if (m.date > t) return false;
     try { const off = tzOffsetMinutes(m.date, m.endTime || S.data.endTime, S.data.timeZone); const [h, mi] = (m.endTime || S.data.endTime).split(':').map(Number); const { y, mo, d } = (() => { const p = dateParts(m.date); return { y: p.y, mo: p.m, d: p.d }; })(); return Date.now() > Date.UTC(y, mo - 1, d, h, mi) - off * 60000; } catch (e) { return false; }
   }
-  function pendingMatches() { return S.data.matches.filter(m => matchEnded(m) && m.status !== 'played' && m.status !== 'canceled'); }
+  const hasResult = m => m.status === 'played' && (m.sets || []).length > 0;
+  function pendingMatches() { return S.data.matches.filter(m => matchEnded(m) && !hasResult(m) && m.status !== 'canceled'); }
   function compactRow(m, opts) {
     opts = opts || {}; const res = matchResult(m);
     const side = (ids, won) => '<span class="crow-team' + (won ? ' won' : '') + '">' + ids.map(id => '<span class="player-line">' + avatarHTML(player(id), 'small', id) + '<span class="name">' + esc(pshort(id)) + '</span></span>').join('') + '</span>';
@@ -213,7 +214,7 @@
   function vcard(p) { return ['BEGIN:VCARD', 'VERSION:3.0', 'N:' + p.name.split(' ').slice(1).join(' ') + ';' + p.name.split(' ')[0] + ';;;', 'FN:' + p.name, p.phone ? 'TEL;TYPE=CELL:' + telNum(p.phone) : '', p.email ? 'EMAIL:' + p.email : '', 'NOTE:' + S.data.name + (p.num ? ' #' + p.num : ''), 'END:VCARD'].filter(Boolean).join('\r\n'); }
 
   /* ---------- rendering: home ---------- */
-  function nextMatch() { const t = todayISO(); return S.data.matches.find(m => (isFlex() ? weekEnd(m.date) >= t : m.date >= t) && m.status !== 'canceled' && m.status !== 'played'); }
+  function nextMatch() { const t = todayISO(); return S.data.matches.find(m => (isFlex() ? weekEnd(m.date) >= t : m.date >= t) && m.status !== 'canceled' && !hasResult(m)); }
   function renderHome() {
     const d = S.data;
     $('#hero-eyebrow').textContent = isFlex() ? (d.season ? d.season + ' · ' : '') + 'one match a week, any day you both agree on' : (d.season ? d.season + ' · ' : '') + (d.dayOfWeek ? d.dayOfWeek + 's ' : '') + time12(d.startTime) + ' to ' + time12(d.endTime);
@@ -231,7 +232,7 @@
     }
     const pend = pendingMatches(); $('#home-pending-block').classList.toggle('hidden', !pend.length); const pendP = $('#home-pending-block .section-head p'); if (pendP) pendP.textContent = isFlex() ? 'These match weeks are over but nobody has entered the result yet. Either player can add it.' : 'These nights have been played but nobody has entered the result yet. Anyone can add it.';
     $('#home-pending').innerHTML = pend.map(m => compactRow(m, { pending: true })).join('');
-    const recent = d.matches.filter(m => m.status === 'played').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
+    const recent = d.matches.filter(hasResult).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
     $('#home-recent-block').classList.toggle('hidden', !recent.length);
     $('#home-recent').innerHTML = recent.map(m => compactRow(m)).join('');
     const ann = $('#home-announce'); const list = (d.announcements || []).slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
@@ -298,7 +299,7 @@
   function wireMatchActions() { /* handled once by delegation in wireMotion */ }
   async function matchAction(b) {
     const id = Number(b.dataset.id); const act = b.dataset.act;
-    if (act === 'score' || act === 'lineup') await freshen();
+    if (act === 'score' || act === 'lineup') { b.disabled = true; const t = setTimeout(() => toast('Getting the latest…'), 500); await freshen(); clearTimeout(t); b.disabled = false; }
     const m = S.data.matches.find(x => x.id === id); if (!m) return;
     if (act === 'score') window.LeagueManage.scoreDialog(m);
     else if (act === 'lineup') window.LeagueManage.lineupDialog(m);
@@ -326,8 +327,8 @@
 
   /* ---------- rendering: standings ---------- */
   function renderStandings() {
-    const st = standings(); const played = S.data.matches.filter(m => m.status === 'played').length; const total = S.data.matches.filter(m => m.status !== 'canceled').length;
-    const games = S.data.matches.filter(m => m.status === 'played').reduce((n, m) => n + m.sets.filter(s => !s.tb).reduce((g, s) => g + s.a + s.b, 0), 0);
+    const st = standings(); const played = S.data.matches.filter(hasResult).length; const total = S.data.matches.filter(m => m.status !== 'canceled').length;
+    const games = S.data.matches.filter(hasResult).reduce((n, m) => n + m.sets.filter(s => !s.tb).reduce((g, s) => g + s.a + s.b, 0), 0);
     $('#standings-note').textContent = played ? played + ' of ' + total + (isFlex() ? ' matches played.' : ' match nights played.') : 'No scores yet. The table fills in as matches are played.';
     $('#standings-tiles').innerHTML = [['Played', played], ['Remaining', total - played], ['Games so far', games], ['Players', activePlayers().length]].map(t => '<div class="tile reveal"><b data-count="' + t[1] + '">0</b><span>' + t[0] + '</span></div>').join('');
     const maxW = Math.max(1, ...st.map(r => r.w));
@@ -506,6 +507,6 @@
     startSyncLoop();
   }
 
-  window.League = { S, save, pendingMatches, matchEnded, isFlex, names, fullNames, pullSync, pushSync, freshen, syncBadge, normalize, player, pname, pshort, activePlayers, standings, matchResult, validateSets, avatarHTML, ballHTML, artSrc, racquetArt, ART, esc, $, $$, todayISO, fmtDate, dow, time12, openModal, closeModal, toast, download, shareURL, encodeShare, telNum, smsLink, mailLink, renderAll, deep, STORE_KEY, lineup, statusLabel, matchCard, wireMatchActions };
+  window.League = { S, save, pendingMatches, matchEnded, hasResult, isFlex, names, fullNames, pullSync, pushSync, freshen, syncBadge, normalize, player, pname, pshort, activePlayers, standings, matchResult, validateSets, avatarHTML, ballHTML, artSrc, racquetArt, ART, esc, $, $$, todayISO, fmtDate, dow, time12, openModal, closeModal, toast, download, shareURL, encodeShare, telNum, smsLink, mailLink, renderAll, deep, STORE_KEY, lineup, statusLabel, matchCard, wireMatchActions };
   document.addEventListener('DOMContentLoaded', init);
 })();
