@@ -6,3 +6,8 @@
 
 No build step: open `site/index.html` or upload the folder to any static host.
 All league content lives in `league-data.js`; edit it on the site's Manage tab and download, or edit by hand.
+
+## Engagement strategy
+- `ENGAGEMENT-STRATEGY-ADULTS.md`: quiet, classy ideas for adult club leagues.
+- `ENGAGEMENT-STRATEGY-KIDS.md`: the high school playbook (ranks, season pass, sportsmanship systems, hidden nuggets).
+- `kids/rally-rush/`: playable prototype of the phone tennis mini game. Open `index.html` on a phone.

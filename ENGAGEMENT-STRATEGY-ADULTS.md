@@ -1,5 +1,10 @@
 # Making the league site something players want to open
 
+**Edition: Adults.** Built for grown-up club leagues: low-key, classy, no
+noise. For high school players, see `ENGAGEMENT-STRATEGY-KIDS.md`, which
+uses a very different playbook (ranks, season pass, cosmetics, a phone mini
+game, sportsmanship systems).
+
 A strategy for the Men's Wednesday Night League site (ccc-mens-doubles-fall).
 Goal: scores get entered the night of the match, and all eight guys check the
 standings every week because they want to, not because they're told to.
