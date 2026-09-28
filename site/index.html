@@ -23,6 +23,7 @@
       <a href="#schedule" data-page="schedule">Schedule</a>
       <a href="#players" data-page="players">Players</a>
       <a href="#standings" data-page="standings">Standings</a>
+      <a href="arcade.html" class="arcade-link">Arcade</a>
       <a href="#manage" data-page="manage">Manage</a>
       <a href="#help" data-help class="help-link" title="How to use this site">? Help</a>
     </nav>
@@ -74,6 +75,10 @@
         <div id="home-standings"></div>
       </section>
       <section class="block reveal">
+        <div class="section-head"><div><span class="eyebrow">Between matches</span><h2>League Arcade</h2></div><a class="btn soft small" href="arcade.html">Play</a></div>
+        <div id="arcade-home"></div>
+      </section>
+      <section class="block reveal">
         <div class="section-head"><div><span class="eyebrow">How it works</span><h2>League rules</h2></div></div>
         <div class="card" id="home-rules"></div>
       </section>
@@ -114,6 +119,10 @@
         <div style="overflow-x:auto"><table class="table" id="standings-table"></table></div>
         <p style="color:var(--muted);font-size:.85rem">Ranked by match wins, then win percentage, then set difference, then game difference. Only matches marked <b>Played</b> count. Match tiebreaks count as a set but not toward games.</p>
       </section>
+      <section class="block">
+        <div class="section-head"><div><span class="eyebrow">Just for fun</span><h2>Arcade ladder</h2><p>Standings from League Arcade, the retro tennis game. Real wins entered on this site pay coins in the game.</p></div><a class="btn soft small" href="arcade.html">Play</a></div>
+        <div id="arcade-standings"></div>
+      </section>
     </div>
   </section>
 
@@ -141,6 +150,7 @@
   <details><summary>Can't make your night? Swap in a sub</summary><div>Text someone from the <b>Sub list</b> on the Players page. Then on the match, tap <b>Change lineup</b> and pick the sub in your spot. Everyone sees the new lineup right away.</div></details>
   <details><summary>Text, call or email anyone</summary><div>Open <b>Players</b>. Every card has <b>Text</b>, <b>Call</b> and <b>Email</b> buttons. <b>Text everyone</b> starts a group text. On a match, <b>Text the four</b> messages just that night's players with the date and lineup already typed.</div></details>
   <details><summary>Put this on your home screen</summary><div>iPhone: tap the share button in Safari, then <b>Add to Home Screen</b>. Android: open the browser menu and choose <b>Add to Home screen</b>. It then opens like an app.</div></details>
+  <details><summary>League Arcade (the game)</summary><div>Tap <b>Arcade</b> in the menu. Pick your name once and your progress saves to the league, so it follows you to any phone. Every opponent is a real league player. Real wins you enter on this site pay coins in the game, so enter your score after every match.</div></details>
   <details><summary>How standings work</summary><div>Only matches marked <b>Played</b> count. Players are ranked by wins, then win percentage, then set difference, then game difference. Match tiebreaks count as a set, not as games.</div></details>
   <p class="eyebrow" style="margin:18px 0 6px">For the captain or pro (Manage tab)</p>
   <details><summary>Add, remove or replace a player</summary><div>Manage → <b>Players</b>. Edit names, numbers, phones and emails right in the list. <b>Add to roster</b> adds a player or sub. If someone drops out, tap <b>Replace everywhere</b> to put another player or sub into all of their remaining nights in one step.</div></details>
@@ -155,5 +165,6 @@
 <script src="league-data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/manage.js"></script>
+<script src="js/arcade-widget.js"></script>
 </body>
 </html>

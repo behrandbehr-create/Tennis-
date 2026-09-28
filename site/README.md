@@ -18,6 +18,24 @@ and is sent automatically when it is back online.
 - **Standings**: automatic.
 - **Manage**: add or drop players, edit any night, post announcements, backups.
 - **? Help** (top right): a short walkthrough of all of the above.
+- **Arcade**: League Arcade, a retro tennis game (see below).
+
+## League Arcade (arcade.html)
+A retro tennis game built into the site to keep players coming back between
+matches.
+- Players pick their name once. Progress saves on the phone and to the league's
+  shared data server in its own slot (`<league>-arcade`), so it follows them to
+  any phone. The real league data is never touched by the game.
+- Every opponent is a real league player, with their real name, number and
+  racquet. Difficulty comes from their real record. The League Tour runs from
+  the weakest real record to the strongest, so the real #1 is the final boss.
+- Real results pay out in the game: 300 coins for every real win entered on the
+  site and 50 for bringing the balls. A missing score shows up as a reminder.
+- Modes: League Tour, Quick Match (Fast4 or tiebreak; hard, clay or grass),
+  Daily Challenge (same one for everyone each day, with streaks), Target
+  Practice. Pro Shop for training, racquets and shirts. 20 trophies.
+- The Home page shows the arcade top three and Standings shows the full arcade
+  ladder.
 
 ## Backups
 Manage → Backup & tools → **Download backup** saves everything to a file.

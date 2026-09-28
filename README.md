@@ -10,4 +10,5 @@ All league content lives in `league-data.js`; edit it on the site's Manage tab a
 ## Engagement strategy
 - `ENGAGEMENT-STRATEGY-ADULTS.md`: quiet, classy ideas for adult club leagues.
 - `ENGAGEMENT-STRATEGY-KIDS.md`: the high school playbook (ranks, season pass, sportsmanship systems, hidden nuggets).
-- `kids/rally-rush/`: playable prototype of the phone tennis mini game. Open `index.html` on a phone.
+- `kids/rally-rush/`: early prototype of a phone mini game (kids playbook).
+- `site/arcade.html`: League Arcade, the retro tennis game built into the live league site. See `site/README.md`.

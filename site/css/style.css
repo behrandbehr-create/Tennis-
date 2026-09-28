@@ -343,3 +343,13 @@ footer a{color:inherit}
   .reveal{opacity:1;transform:none}
 }
 @media print{.topbar,.hero-media,.savebar,.match-actions,.group-actions{display:none!important}.page{display:block!important}body{padding-top:0}}
+
+/* ---------- League Arcade teaser ---------- */
+.nav a.arcade-link{color:var(--coral)}
+.arcade-card{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:linear-gradient(135deg,#10173d,#1f2e1a);color:#f4f6ff;border:0}
+.arcade-card p{margin:0;color:#dfe5ff;max-width:52ch}
+.arcade-copy{display:grid;gap:12px;min-width:0;flex:1 1 280px}
+.arcade-top{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.arcade-top li{display:flex;gap:10px;align-items:center}
+.arcade-top small{display:block;color:#9aa5dc;font-size:.8rem}
+.arcade-empty{color:#9aa5dc!important;font-size:.9rem}

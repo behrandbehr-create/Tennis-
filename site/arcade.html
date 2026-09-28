@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>League Arcade</title>
+<meta name="theme-color" content="#0b1030">
+<link rel="icon" href="assets/club-logo.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/arcade.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" aria-label="Tennis court"></canvas>
+
+  <div id="hud" hidden>
+    <div class="board" id="board"></div>
+    <button class="pause" id="pauseBtn" type="button" aria-label="Pause">II</button>
+    <div class="hint" id="hint"></div>
+    <div class="rally" id="rallyTag"></div>
+    <div class="meter" id="serveMeter" hidden><i id="serveFill"></i><b id="serveSweet"></b></div>
+  </div>
+  <div id="callout" aria-live="polite"></div>
+  <div id="ui"></div>
+  <div id="toasts"></div>
+</div>
+
+<script src="league-data.js"></script>
+<script src="js/arcade.js"></script>
+</body>
+</html>
