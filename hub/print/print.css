@@ -1,0 +1,42 @@
+/* Printable handout styles. Designed for one sheet of US Letter each. */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap');
+:root{--green:#344f2c;--olive:#728728;--ink:#1f1f1f;--muted:#5a6355;--line:#dce2d7;--soft:#eaf0e5}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7f2;color:var(--ink);font:16px/1.5 'Manrope',system-ui,sans-serif}
+.sheet{width:8.5in;min-height:11in;margin:20px auto;background:#fff;padding:0.6in 0.7in;box-shadow:0 10px 40px rgba(0,0,0,.12)}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif;margin:0;line-height:1.15}
+h1{font-size:34px}
+h2{font-size:21px;margin:22px 0 8px;color:var(--green)}
+h3{font-size:16px;margin:0 0 4px}
+.top{display:flex;align-items:center;gap:14px;border-bottom:3px solid var(--green);padding-bottom:12px;margin-bottom:18px}
+.top img{height:58px;width:auto}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--olive)}
+.lead{color:var(--muted);margin:6px 0 0}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+ol.steps li{counter-increment:s;position:relative;padding:0 0 14px 44px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+ol.steps li:last-child{border-bottom:0}
+ol.steps li:before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;font-weight:800;font-family:'Playfair Display',serif;display:grid;place-items:center;font-size:16px}
+ol.steps b{display:block;font-size:16px;margin-bottom:2px}
+ol.steps span{color:var(--muted);font-size:14px}
+.link-box{background:var(--soft);border:1px dashed var(--olive);border-radius:10px;padding:12px 14px;margin:14px 0;font-weight:800;word-break:break-all;font-size:15px}
+.link-box small{display:block;font-weight:600;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-size:10px;margin-bottom:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.box p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.note{background:var(--soft);border-left:4px solid var(--olive);border-radius:0 8px 8px 0;padding:10px 14px;font-size:14px;margin:14px 0}
+.foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:12px}
+.cut{border-top:2px dashed var(--line);margin:24px 0;text-align:center}
+.cut span{background:#fff;padding:0 10px;position:relative;top:-11px;color:var(--muted);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.card{border:2px solid var(--green);border-radius:12px;padding:16px 18px}
+.card h3{font-size:19px;color:var(--green)}
+.qr{float:right;width:110px;height:110px;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;color:var(--muted);font-size:10px;text-align:center;padding:6px;margin-left:12px}
+.print-btn{display:block;width:8.5in;margin:14px auto 0;text-align:right}
+.print-btn button{font:inherit;font-weight:800;background:var(--green);color:#fff;border:0;border-radius:99px;padding:10px 20px;cursor:pointer}
+@media print{
+  body{background:#fff}
+  .sheet{width:auto;min-height:auto;margin:0;padding:0.45in 0.5in;box-shadow:none;page-break-after:always}
+  .sheet:last-of-type{page-break-after:auto}
+  .print-btn{display:none}
+  a{text-decoration:none;color:inherit}
+}
+@media (max-width:8.9in){.sheet,.print-btn{width:auto;max-width:100%}.grid2{grid-template-columns:1fr}}

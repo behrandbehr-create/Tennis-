@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Start a new league</title>
+<meta name="theme-color" content="#344f2c">
+<link rel="icon" href="assets/club-logo.png" type="image/png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wiz">
+  <div class="wiz-head"><img id="wiz-logo" alt=""><div><span class="eyebrow">Country Club of Colorado</span><h2 style="margin:2px 0 0">Start a new league</h2></div></div>
+  <p class="sub" style="color:var(--muted);margin:6px 0 0">Four short steps. Nothing to install, nothing to upload. About five minutes.</p>
+  <div class="wiz-steps"><div id="s1"></div><div id="s2"></div><div id="s3"></div><div id="s4"></div></div>
+
+  <!-- 1. the league -->
+  <section class="wiz-card" id="step1">
+    <h2>1. About the league</h2>
+    <p class="sub">This is what players see at the top of the page.</p>
+    <div class="form-grid">
+      <label class="f">League name<input id="f-name" placeholder="Men's Thursday Doubles" autocomplete="off"></label>
+      <label class="f">Club or courts<input id="f-venue" value="Country Club of Colorado" autocomplete="off"></label>
+      <label class="f">Season<input id="f-season" placeholder="Fall 2026" autocomplete="off"></label>
+      <label class="f">Match type<select id="f-type"><option value="4">Doubles (4 players a match)</option><option value="2">Singles (2 players a match)</option></select></label>
+      <label class="f">Scheduling<select id="f-flex"><option value="false">Same night every week</option><option value="true">Flex: players pick any day that week</option></select></label>
+      <label class="f" id="wrap-day">Match day<select id="f-day"><option>Monday</option><option>Tuesday</option><option selected>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></label>
+      <label class="f" id="wrap-start">Starts<input type="time" id="f-start" value="19:00"></label>
+      <label class="f" id="wrap-end">Ends<input type="time" id="f-end" value="20:30"></label>
+      <label class="f">Time zone<select id="f-tz">
+        <option value="America/Denver" selected>Mountain (Denver)</option><option value="America/Phoenix">Arizona (Phoenix)</option>
+        <option value="America/Chicago">Central (Chicago)</option><option value="America/New_York">Eastern (New York)</option>
+        <option value="America/Los_Angeles">Pacific (Los Angeles)</option><option value="America/Anchorage">Alaska</option><option value="Pacific/Honolulu">Hawaii</option>
+      </select></label>
+    </div>
+    <h3 style="margin:20px 0 8px">Who runs the league</h3>
+    <div class="form-grid">
+      <label class="f">Name<input id="f-org" placeholder="Roger Anderson" autocomplete="off"></label>
+      <label class="f">Phone<input id="f-orgphone" type="tel" placeholder="719-555-0100" autocomplete="off"></label>
+      <label class="f">Email<input id="f-orgemail" type="email" placeholder="you@club.com" autocomplete="off"></label>
+    </div>
+    <div class="wiz-nav"><span></span><button class="btn primary" data-next="2">Next: players</button></div>
+    <p class="wiz-hint" id="hint1"></p>
+  </section>
+
+  <!-- 2. players -->
+  <section class="wiz-card hidden" id="step2">
+    <h2>2. Who is playing</h2>
+    <p class="sub">Phone and email are what make the Text, Call and Email buttons work. Both are optional, but the league is much more useful with them.</p>
+    <div class="prow prow-head"><span>Name</span><span>Phone</span><span>Email</span><span>Sub?</span><span></span></div>
+    <div id="players"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+      <button class="btn soft small" id="add-player">+ Add a player</button>
+      <button class="btn soft small" id="add-sub">+ Add a substitute</button>
+    </div>
+    <p class="wiz-hint" id="hint2"></p>
+    <div class="wiz-nav"><button class="btn soft" data-back="1">Back</button><button class="btn primary" data-next="3">Next: schedule</button></div>
+  </section>
+
+  <!-- 3. schedule -->
+  <section class="wiz-card hidden" id="step3">
+    <h2>3. Build the schedule</h2>
+    <p class="sub">Pick the first date and how many weeks. Everyone gets about the same number of matches, partners and opponents are mixed, and ball duty is shared evenly.</p>
+    <div class="form-grid">
+      <label class="f" id="wrap-first">First match date<input type="date" id="f-first"></label>
+      <label class="f">Number of weeks<input type="number" id="f-weeks" min="1" max="40" value="12"></label>
+      <label class="f" style="grid-column:span 2">Skip these dates (holidays, optional)<input id="f-skip" placeholder="2026-11-25, 2026-12-23" autocomplete="off"></label>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn court" id="build">Build the schedule</button><span class="wiz-hint" id="hint3" style="align-self:center"></span></div>
+    <div id="preview" class="wiz-preview hidden"></div>
+    <div class="wiz-nav"><button class="btn soft" data-back="2">Back</button><button class="btn primary hidden" id="to4">Next: finish</button></div>
+  </section>
+
+  <!-- 4. done -->
+  <section class="wiz-card hidden" id="step4">
+    <h2>4. Create the league</h2>
+    <p class="sub">One press and the league is live. Everyone you send the link to sees the same schedule and scores.</p>
+    <div id="summary" class="wiz-preview" style="max-height:none"></div>
+    <label class="f" style="margin-top:16px">Captain code (optional)<input id="f-pin" placeholder="Leave blank so anyone can enter scores" autocomplete="off"></label>
+    <p class="wiz-hint">With a code, only people who know it can change the roster or schedule. Most leagues leave it blank so anyone can enter a score after their match.</p>
+    <div class="wiz-nav"><button class="btn soft" data-back="3">Back</button><button class="btn primary" id="create">Create my league</button></div>
+    <p class="wiz-hint" id="hint4"></p>
+  </section>
+
+  <!-- done -->
+  <section class="wiz-card hidden" id="done">
+    <div class="wiz-done-icon">✓</div>
+    <h2 style="text-align:center">Your league is live</h2>
+    <p class="sub" style="text-align:center">Send this link to your players. Anyone who opens it sees the schedule and can enter scores.</p>
+    <div class="wiz-link"><span id="done-link"></span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn primary" id="copy-link">Copy the link</button>
+      <a class="btn court" id="text-players" href="#">Text it to everyone</a>
+      <a class="btn soft" id="open-league" href="#">Open the league</a>
+    </div>
+    <h3 style="margin:22px 0 6px">What to tell your players</h3>
+    <div class="wiz-preview" style="max-height:none"><div style="display:block"><span id="msg-preview" style="white-space:pre-wrap"></span></div></div>
+    <p class="wiz-hint">Tip: open the link on your phone, then use your browser's Share button and choose <b>Add to Home Screen</b>. It then opens like an app.</p>
+    <p class="wiz-hint" style="margin-top:16px">Printable handouts: <a id="print-card" href="print/player-card.html">player card for this league</a> · <a href="print/quick-start.html">starting a league</a> · <a href="print/troubleshooting.html">if something looks wrong</a></p>
+    <div class="wiz-nav"><a class="btn soft" href="./">All leagues</a><a class="btn soft" href="start.html">Start another league</a></div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/hub-boot.js"></script>
+<script src="js/generator.js"></script>
+<script src="js/wizard.js"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Player card</title><link rel="stylesheet" href="print.css"></head>
+<body>
+<div class="print-btn"><button onclick="window.print()">Print this page</button></div>
+
+<div class="sheet">
+  <div class="top"><img src="../assets/club-logo.png" alt=""><div><span class="eyebrow">Country Club of Colorado</span><h1>Your league, on your phone</h1><p class="lead">Everything for the season in one link. Nothing to download.</p></div></div>
+
+  <div class="link-box"><small>Open this on your phone</small><span id="league-url">(your league link)</span></div>
+
+  <div class="grid2">
+    <div class="box"><h3>See your nights</h3><p>Tap <b>Schedule</b>. Use the <b>All players</b> menu to show only your matches. The tennis ball marks who brings a new can.</p></div>
+    <div class="box"><h3>Enter your score</h3><p>On the front page your match appears under <b>Waiting for a score</b>. Tap <b>Enter score</b>, tap <b>Played</b>, type the games, tap <b>Save</b>.</p></div>
+    <div class="box"><h3>Reach anyone</h3><p>Tap <b>Players</b>. Every card has <b>Text</b>, <b>Call</b> and <b>Email</b>. On a match, <b>Text the four</b> messages just that night's group.</p></div>
+    <div class="box"><h3>Need a sub?</h3><p>Text someone from the <b>Sub list</b>, then tap <b>Change lineup</b> on your match and pick them. Everyone sees it right away.</p></div>
+  </div>
+
+  <h2>Put it on your home screen</h2>
+  <div class="grid2">
+    <div class="box"><h3>iPhone</h3><p>Open the link in Safari, tap the share button at the bottom, scroll down and tap <b>Add to Home Screen</b>.</p></div>
+    <div class="box"><h3>Android</h3><p>Open the link in Chrome, tap the three dots at the top right, then tap <b>Add to Home screen</b>.</p></div>
+  </div>
+
+  <div class="note"><b>Unfinished match?</b> If you run out of time in the middle of a set, choose <b>Unfinished</b> instead of Played. It will not count in the standings. <b>Got it wrong?</b> Tap <b>Edit score</b> on the match and fix it. Nothing is locked.</div>
+
+  <h2>How standings work</h2>
+  <p>Only matches marked <b>Played</b> count. Players are ranked by wins, then win percentage, then set difference, then game difference. A match tiebreak counts as a set, not as games.</p>
+
+  <div class="foot"><span>Stuck? There is a <b>?</b> button at the top of every page with a short walkthrough.</span><span id="foot-contact"></span></div>
+</div>
+
+<div class="sheet">
+  <div class="top"><img src="../assets/club-logo.png" alt=""><div><span class="eyebrow">Cut along the lines</span><h1>Pocket cards</h1><p class="lead">Hand one to each player, or leave a stack in the pro shop.</p></div></div>
+
+  <div class="card">
+    <h3 id="c1-name">Your tennis league</h3>
+    <p style="margin:6px 0 10px;color:#5a6355;font-size:14px">Schedule, who you play, who brings balls, everyone's number, and scores.</p>
+    <div class="link-box" style="margin:0"><small>Open on your phone</small><span class="league-url"></span></div>
+    <p style="margin:10px 0 0;font-size:13px;color:#5a6355">Enter your score right after your match. Add it to your home screen so it opens like an app.</p>
+  </div>
+
+  <div class="cut"><span>cut here</span></div>
+
+  <div class="card">
+    <h3 id="c2-name">Your tennis league</h3>
+    <p style="margin:6px 0 10px;color:#5a6355;font-size:14px">Schedule, who you play, who brings balls, everyone's number, and scores.</p>
+    <div class="link-box" style="margin:0"><small>Open on your phone</small><span class="league-url"></span></div>
+    <p style="margin:10px 0 0;font-size:13px;color:#5a6355">Enter your score right after your match. Add it to your home screen so it opens like an app.</p>
+  </div>
+
+  <div class="cut"><span>cut here</span></div>
+
+  <div class="card">
+    <h3 id="c3-name">Your tennis league</h3>
+    <p style="margin:6px 0 10px;color:#5a6355;font-size:14px">Schedule, who you play, who brings balls, everyone's number, and scores.</p>
+    <div class="link-box" style="margin:0"><small>Open on your phone</small><span class="league-url"></span></div>
+    <p style="margin:10px 0 0;font-size:13px;color:#5a6355">Enter your score right after your match. Add it to your home screen so it opens like an app.</p>
+  </div>
+
+  <div class="foot"><span>Country Club of Colorado</span><span>Racquet Sports</span></div>
+</div>
+
+<script>
+  // Pass a league in the address to print a card for it:
+  //   player-card.html?league=mens-thursday-doubles
+  var params = new URLSearchParams(location.search);
+  var slug = (params.get('league') || '').replace(/[^a-z0-9-]/gi, '');
+  var base = location.origin + location.pathname.replace(/print\/.*$/, '');
+  var url = base + (slug ? '?league=' + slug : '');
+  document.getElementById('league-url').textContent = slug ? url : base + '?league=YOUR-LEAGUE';
+  Array.prototype.forEach.call(document.querySelectorAll('.league-url'), function (el) { el.textContent = slug ? url : base + '?league=YOUR-LEAGUE'; });
+  if (slug) {
+    fetch('https://wednesday-night-tennis.higgsfield.app/api/state?league=' + slug, { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (b) {
+        if (!b.data) return;
+        ['c1-name', 'c2-name', 'c3-name'].forEach(function (id) { document.getElementById(id).textContent = b.data.name; });
+        document.title = b.data.name + ' player card';
+        var o = b.data.organizer || {};
+        if (o.name) document.getElementById('foot-contact').textContent = 'Questions: ' + o.name + (o.phone ? ' · ' + o.phone : '');
+      }).catch(function () { });
+  }
+</script>
+</body></html>

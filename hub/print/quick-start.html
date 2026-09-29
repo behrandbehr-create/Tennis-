@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quick start for the pro</title><link rel="stylesheet" href="print.css"></head>
+<body>
+<div class="print-btn"><button onclick="window.print()">Print this page</button></div>
+
+<div class="sheet">
+  <div class="top"><img src="../assets/club-logo.png" alt=""><div><span class="eyebrow">Country Club of Colorado</span><h1>Starting a new league</h1><p class="lead">For the racquet sports staff. About five minutes, start to finish.</p></div></div>
+
+  <div class="link-box"><small>Go here on any phone, tablet or computer</small><span id="hub-url">(your league website address)</span></div>
+
+  <ol class="steps">
+    <li><b>Press "Start a new league"</b><span>It is the green button under the list of leagues.</span></li>
+    <li><b>Step 1: tell it about the league</b><span>Name, season, singles or doubles, and whether everyone plays the same night or picks their own day that week. Add your name, phone and email so players know who to ask.</span></li>
+    <li><b>Step 2: type in the players</b><span>One line each: name, phone, email. Press "+ Add a player" for more rows, and "+ Add a substitute" for the sub list. Phone and email are what make the Text, Call and Email buttons work, so put them in if you have them.</span></li>
+    <li><b>Step 3: build the schedule</b><span>Pick the first date and how many weeks, list any holidays to skip, then press "Build the schedule". It evens out matches, mixes up partners and opponents, and shares ball duty. Look it over, then continue.</span></li>
+    <li><b>Step 4: create it</b><span>Press "Create my league". You get a link straight away.</span></li>
+    <li><b>Send the link to your players</b><span>Press "Text it to everyone" and your phone opens a message with everyone already on it. Or press "Copy the link" and paste it into an email.</span></li>
+  </ol>
+
+  <h2>After that, you are done</h2>
+  <div class="grid2">
+    <div class="box"><h3>Players do the rest</h3><p>They enter their own scores after a match. Standings update by themselves.</p></div>
+    <div class="box"><h3>Nothing to maintain</h3><p>No files, no uploads, no passwords. Changes anyone makes show up for everyone within a minute.</p></div>
+  </div>
+
+  <div class="note"><b>Changing something later:</b> open the league, tap <b>Manage</b>. You can add or drop a player, replace someone for the rest of the season, move a date, cancel a week, or post an announcement. It saves as you go.</div>
+
+  <div class="foot"><span>Questions: <b id="foot-contact">your club contact</b></span><span>Keep this page at the front desk</span></div>
+</div>
+
+<div class="sheet">
+  <div class="top"><img src="../assets/club-logo.png" alt=""><div><span class="eyebrow">Country Club of Colorado</span><h1>Handy to know</h1><p class="lead">Answers to the questions players ask most.</p></div></div>
+
+  <h2>Someone drops out mid-season</h2>
+  <p>Open the league, tap <b>Manage</b>, then <b>Players</b>. Find them and press <b>Replace everywhere</b>. Pick who takes their place and choose whether to change only the weeks still to come. Every remaining match is updated in one step.</p>
+
+  <h2>A match gets rained out or moved</h2>
+  <p><b>Manage</b>, then <b>Schedule &amp; scores</b>, then <b>Edit</b> on that week. Change the date, or set it to Canceled so it does not count in the standings.</p>
+
+  <h2>Nobody entered a score</h2>
+  <p>It stays on the front page under <b>Waiting for a score</b> with a green button, until someone fills it in. Nothing is lost.</p>
+
+  <h2>Someone says the site looks out of date</h2>
+  <p>Have them close and reopen it. If it still looks wrong, <b>Manage</b>, then <b>Backup &amp; tools</b>, then <b>Reset this phone</b>. That reloads a fresh copy from the server.</p>
+
+  <h2>Starting next season</h2>
+  <p>Start a new league the same way, with the same players and new dates. Keep the old one for the record, or delete it under <b>Manage</b>, then <b>Backup &amp; tools</b>.</p>
+
+  <h2>Keeping a copy</h2>
+  <p><b>Manage</b>, then <b>Backup &amp; tools</b>, then <b>Download backup</b> saves everything to the device. Worth doing once a month and before big roster changes.</p>
+
+  <div class="note"><b>A word about the captain code:</b> if you set one when creating a league, only people who know it can use the Manage tab. Most leagues leave it blank so any player can enter a score after their match. You can add or remove it later under Manage, League info, Advanced settings.</div>
+
+  <div class="foot"><span id="foot-url2"></span><span>Country Club of Colorado</span></div>
+</div>
+
+<script>
+  var origin = location.origin + location.pathname.replace(/print\/.*$/, '');
+  document.getElementById('hub-url').textContent = origin;
+  document.getElementById('foot-url2').textContent = origin;
+</script>
+</body></html>

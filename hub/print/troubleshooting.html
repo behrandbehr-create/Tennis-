@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>If something looks wrong</title><link rel="stylesheet" href="print.css"></head>
+<body>
+<div class="print-btn"><button onclick="window.print()">Print this page</button></div>
+<div class="sheet">
+  <div class="top"><img src="../assets/club-logo.png" alt=""><div><span class="eyebrow">Country Club of Colorado</span><h1>If something looks wrong</h1><p class="lead">Five things to try, in order. One of them fixes almost everything.</p></div></div>
+
+  <ol class="steps">
+    <li><b>Close the page and open it again</b><span>The site checks for new scores when it opens. Nine times out of ten this is the whole fix.</span></li>
+    <li><b>Check the badge at the top right</b><span><b>Live</b> in green means it is connected and everything you do is shared. <b>Offline</b> means no signal: your change is saved on your phone and sends itself when you are back online. Nothing is lost.</span></li>
+    <li><b>Reset this phone</b><span>Manage, then Backup &amp; tools, then <b>Reset this device</b>. It throws away the copy on that phone and pulls a fresh one from the server. Safe to do any time.</span></li>
+    <li><b>Check you are on the right league</b><span>Each league has its own link. If the name at the top is not your league, go back to the main page and pick yours from the list.</span></li>
+    <li><b>Still wrong? Restore a backup</b><span>Manage, then Backup &amp; tools, then <b>Import backup</b>, and pick your most recent backup file.</span></li>
+  </ol>
+
+  <h2>Common questions</h2>
+  <div class="grid2">
+    <div class="box"><h3>"I entered a score and someone else's showed up"</h3><p>Two people saved within a few seconds of each other. The site tells the second person and shows them the newest version so they can redo it. Just enter it again.</p></div>
+    <div class="box"><h3>"The score I entered disappeared"</h3><p>Check the match was marked <b>Played</b>, not Unfinished or Scheduled. Only Played matches count and show a score.</p></div>
+    <div class="box"><h3>"I can't edit anything"</h3><p>The league has a captain code. Ask whoever set it up for the code, or have them remove it under Manage, League info, Advanced settings.</p></div>
+    <div class="box"><h3>"A player's phone number is wrong"</h3><p>Manage, then Players. Type over it. It saves as you go.</p></div>
+  </div>
+
+  <div class="note"><b>Before you call anyone:</b> open Manage, then Backup &amp; tools, then <b>Download backup</b>. That saves a copy of every player, match and score, so nothing can be lost while sorting out the problem.</div>
+
+  <div class="foot"><span>League website: <b id="hub-url"></b></span><span>Keep with the quick start page</span></div>
+</div>
+<script>document.getElementById('hub-url').textContent = location.origin + location.pathname.replace(/print\/.*$/, '');</script>
+</body></html>
