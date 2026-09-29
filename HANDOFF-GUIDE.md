@@ -96,10 +96,14 @@ walks players and captains through every feature.
 
 ## Uploading anything here
 
-The host needs `index.html` at the top level of what you upload. Use the DEPLOY
-zips, or drag the folder itself. Do not zip a folder and upload that, because it
-buries `index.html` one level down and the host will show a file listing instead
-of the site.
+**Upload one file: `Tennis-League-Hub-DEPLOY.zip`.** Drag that single zip onto
+app.netlify.com/drop. Do not upload this whole kit folder and do not upload a zip
+of a folder, because either one buries `index.html` a level down and the host
+answers "Page not found" at the address you hand out.
+
+If the whole kit does get uploaded by mistake, the `index.html` at the top of it
+forwards to `league-hub/`, so the site still works. That is a safety net, not the
+plan.
 
 ## Artwork and colors
 
