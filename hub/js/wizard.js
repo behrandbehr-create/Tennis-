@@ -12,6 +12,19 @@
   const W = { step: 1, matches: [], slug: '', created: null };
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+  /* The folder this page lives in, whatever the host calls the page. Netlify
+     serves it at /start with no .html, so match either spelling. */
+  const BASE = location.href.split(/[?#]/)[0].replace(/\/start(\.html)?\/?$/, '/').replace(/[^/]*$/, '');
+
+  /* Somebody followed a league link that points at the wizard instead of the
+     league. Send them where they meant to go rather than showing a blank form. */
+  (function rescue() {
+    const want = new URLSearchParams(location.search).get('league');
+    if (want && /^[a-z0-9][a-z0-9-]{0,48}$/.test(want.toLowerCase().trim())) {
+      location.replace(BASE + '?league=' + encodeURIComponent(want.toLowerCase().trim()));
+    }
+  })();
+
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3000); }
   function digits(p) { return String(p || '').replace(/[^\d+]/g, ''); }
   function tel(p) { let d = digits(p); if (!d) return ''; if (d[0] !== '+' && d.length === 10) d = '+1' + d; return d; }
@@ -130,14 +143,14 @@
       const r = await fetch(HUB.api + '?league=' + W.slug, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ baseVersion: 0, data: data }) });
       if (!r.ok) throw new Error('server said ' + r.status);
       W.created = data;
-      const url = location.href.replace(/start\.html.*$/, '') + '?league=' + W.slug;
+      const url = BASE + '?league=' + W.slug;
       $('#done-link').textContent = url; $('#open-league').href = url;
       const msg = name + ' is online: ' + url + '\n\nYou can see the schedule, who you play, who brings balls, and everyone\'s phone and email. Enter your score right after each match. Tip: add it to your phone\'s home screen.';
       $('#msg-preview').textContent = msg;
       const nums = readPlayers().map(p => tel(p.phone)).filter(Boolean);
       $('#text-players').href = nums.length ? (isIOS ? 'sms:/open?addresses=' + nums.join(',') + '&body=' + encodeURIComponent(msg) : 'sms:' + nums.join(',') + '?body=' + encodeURIComponent(msg)) : '#';
       if (!nums.length) { $('#text-players').classList.add('hidden'); }
-      const pc = $('#print-card'); if (pc) pc.href = 'print/player-card.html?league=' + encodeURIComponent(W.slug);
+      const pc = $('#print-card'); if (pc) pc.href = BASE + 'print/player-card.html?league=' + encodeURIComponent(W.slug);
       $('#copy-link').onclick = async () => { try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch (e) { toast('Press and hold the link to copy it'); } };
       showDone();
     } catch (e) {

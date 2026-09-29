@@ -63,7 +63,7 @@ function summary(slug, stored) {
     name: d.name || slug,
     season: d.season || '',
     venue: d.venue || '',
-    dayOfWeek: typeof d.dayOfWeek === 'number' ? d.dayOfWeek : null,
+    dayOfWeek: d.dayOfWeek || '',
     flex: !!d.flex,
     playersPerMatch: d.playersPerMatch || null,
     players: Array.isArray(d.players) ? d.players.length : 0,
