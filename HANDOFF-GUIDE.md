@@ -50,11 +50,14 @@ That is the link players save to their phone's home screen.
 In `hub/print/`, or on the hub itself at the bottom of the league list. Open in a
 browser and press Print.
 
-- **quick-start.html** - one page on creating a league. Hand this to an organizer
-  along with the hub link.
-- **`player-card.html?league=<league name>`** - one page for players. It fills in
-  that league's own link and the organizer's phone number automatically, so you can
-  print a stack and leave them in the pro shop.
+- **quick-start.html** - two pages. The first is creating a league, start to
+  finish. The second answers the questions organizers actually ask: someone drops
+  out, a match gets rained out, nobody entered a score, starting next season. Hand
+  this to an organizer along with the hub link.
+- **`player-card.html?league=<league name>`** - two pages for players. The first
+  explains the link and how standings work. The second is cut-out pocket cards,
+  several to a sheet, to leave a stack in the pro shop. Both fill in that league's
+  own link and the organizer's phone number automatically.
 - **troubleshooting.html** - one page on what to do if something looks wrong. Short
   and plain: mostly "pull down to refresh" and "who to call".
 
